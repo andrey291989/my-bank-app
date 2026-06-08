@@ -1,0 +1,9 @@
+ru/yandex/practicum/notifications/config/DataSourceConfig.class
+ru/yandex/practicum/notifications/repository/NotificationRepository.class
+ru/yandex/practicum/notifications/model/Notification.class
+ru/yandex/practicum/notifications/service/NotificationService.class
+ru/yandex/practicum/notifications/controller/NotificationController.class
+ru/yandex/practicum/notifications/NotificationsApplication.class
+ru/yandex/practicum/notifications/config/SecurityConfig.class
+ru/yandex/practicum/notifications/dto/NotificationRequestDto.class
+ru/yandex/practicum/notifications/service/EmailService.class

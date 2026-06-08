@@ -1,0 +1,13 @@
+ru/yandex/practicum/accounts/dto/NotificationRequestDto.class
+ru/yandex/practicum/accounts/config/SecurityConfig.class
+ru/yandex/practicum/accounts/service/NotificationClient.class
+ru/yandex/practicum/accounts/dto/AccountDto.class
+ru/yandex/practicum/accounts/AccountsApplication.class
+ru/yandex/practicum/accounts/config/WebClientConfig.class
+ru/yandex/practicum/accounts/config/DataSourceConfig.class
+ru/yandex/practicum/accounts/model/Account.class
+ru/yandex/practicum/accounts/repository/AccountRepository.class
+ru/yandex/practicum/accounts/controller/AccountController.class
+ru/yandex/practicum/accounts/dto/AccountUpdateRequestDto.class
+ru/yandex/practicum/accounts/dto/AccountResponseDto.class
+ru/yandex/practicum/accounts/service/AccountService.class

@@ -1,0 +1,4 @@
+/Users/ayborisov1/IdeaProjects/my-bank-app/gateway/src/main/java/ru/yandex/practicum/gateway/config/GatewayConfig.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/gateway/src/main/java/ru/yandex/practicum/gateway/config/SecurityConfig.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/gateway/src/main/java/ru/yandex/practicum/gateway/GatewayApplication.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/gateway/src/main/java/ru/yandex/practicum/gateway/filter/JwtTokenRelayFilter.java

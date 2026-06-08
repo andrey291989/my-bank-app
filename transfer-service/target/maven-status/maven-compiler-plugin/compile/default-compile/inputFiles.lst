@@ -1,0 +1,14 @@
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/config/SecurityConfig.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/config/WebClientConfig.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/dto/TransferResponseDto.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/TransferApplication.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/model/TransferTransaction.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/service/AccountsClient.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/dto/NotificationRequestDto.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/controller/TransferController.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/dto/TransferRequestDto.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/config/DataSourceConfig.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/service/NotificationClient.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/service/TransferService.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/dto/AccountResponseDto.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/transfer-service/src/main/java/ru/yandex/practicum/transfer/repository/TransferTransactionRepository.java

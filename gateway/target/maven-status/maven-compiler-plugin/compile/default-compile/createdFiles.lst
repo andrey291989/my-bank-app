@@ -1,0 +1,4 @@
+ru/yandex/practicum/gateway/filter/JwtTokenRelayFilter.class
+ru/yandex/practicum/gateway/GatewayApplication.class
+ru/yandex/practicum/gateway/config/SecurityConfig.class
+ru/yandex/practicum/gateway/config/GatewayConfig.class

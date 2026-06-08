@@ -1,0 +1,82 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: notifications-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bank_db
+    username: bank_user
+    password: bank_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: notifications_schema
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    schemas: notifications_schema
+    locations: classpath:db/migration
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
+          jwk-set-uri: http://localhost:9000/protocol/openid-connect/certs
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:bank-notifications@example.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    test-connection: false
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        service-name: notifications-service
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+      config:
+        enabled: true
+        format: YAML
+        prefix: config
+        default-context: application
+
+notifications:
+  delivery:
+    method: ${NOTIFICATION_DELIVERY_METHOD:LOG} # LOG or EMAIL
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    ru.yandex.practicum: DEBUG
+    org.springframework.security: INFO
+    org.springframework.mail: WARN

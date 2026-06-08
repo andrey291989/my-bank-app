@@ -1,0 +1,9 @@
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/config/DataSourceConfig.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/config/SecurityConfig.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/service/EmailService.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/controller/NotificationController.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/NotificationsApplication.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/model/Notification.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/repository/NotificationRepository.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/service/NotificationService.java
+/Users/ayborisov1/IdeaProjects/my-bank-app/notifications-service/src/main/java/ru/yandex/practicum/notifications/dto/NotificationRequestDto.java

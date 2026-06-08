@@ -1,0 +1,300 @@
+{
+  "realm": "bank",
+  "enabled": true,
+  "displayName": "Bank Application Realm",
+  "displayNameHtml": "<b>Bank Application</b> Realm",
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespan": 5184000,
+  "clientSessionIdleTimeout": 1800,
+  "clientSessionMaxLifespan": 36000,
+  "refreshTokenMaxReuse": 0,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "defaultSignatureAlgorithm": "RS256",
+  "revokeRefreshToken": false,
+
+  "clients": [
+    {
+      "clientId": "bank-frontend",
+      "name": "Bank Frontend UI",
+      "description": "Frontend web application for bank users",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": [
+        "http://localhost:8080/login/oauth2/code/bank-client",
+        "http://localhost:8080/*",
+        "http://front-ui:8080/login/oauth2/code/bank-client",
+        "http://front-ui:8080/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8080",
+        "http://front-ui:8080"
+      ],
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "use.refresh.tokens": "true",
+        "backchannel.logout.session.required": "true",
+        "client_credentials.use_refresh_token": "false",
+        "require.pushed.authorization.requests": "false",
+        "acr.loa.map": "{}",
+        "tls.client.certificate.bound.access.tokens": "false",
+        "require.proof.key": "false"
+      }
+    },
+    {
+      "clientId": "accounts-service",
+      "name": "Accounts Service",
+      "description": "Microservice for managing bank accounts",
+      "enabled": true,
+      "secret": "accounts-secret",
+      "redirectUris": [],
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "client_credentials.use_refresh_token": "true"
+      }
+    },
+    {
+      "clientId": "cash-service",
+      "name": "Cash Service",
+      "description": "Microservice for cash deposits and withdrawals",
+      "enabled": true,
+      "secret": "cash-secret",
+      "redirectUris": [],
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "client_credentials.use_refresh_token": "true"
+      }
+    },
+    {
+      "clientId": "transfer-service",
+      "name": "Transfer Service",
+      "description": "Microservice for money transfers between accounts",
+      "enabled": true,
+      "secret": "transfer-secret",
+      "redirectUris": [],
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "client_credentials.use_refresh_token": "true"
+      }
+    }
+  ],
+
+  "users": [
+    {
+      "username": "ivanov",
+      "enabled": true,
+      "email": "ivanov@bankapp.com",
+      "firstName": "Иван",
+      "lastName": "Иванов",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "clientRoles": {
+        "accounts-service": ["view_profile", "manage_account"],
+        "cash-service": ["view_account", "execute_cash"],
+        "transfer-service": ["view_account", "execute_transfer"]
+      },
+      "attributes": {
+        "birthdate": "1990-05-15",
+        "phone": "+7(999)123-45-67"
+      }
+    },
+    {
+      "username": "petrov",
+      "enabled": true,
+      "email": "petrov@bankapp.com",
+      "firstName": "Петр",
+      "lastName": "Петров",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "clientRoles": {
+        "accounts-service": ["view_profile"],
+        "cash-service": ["view_account", "execute_cash"],
+        "transfer-service": ["view_account", "execute_transfer"]
+      },
+      "attributes": {
+        "birthdate": "1985-08-20",
+        "phone": "+7(999)234-56-78"
+      }
+    },
+    {
+      "username": "sidorov",
+      "enabled": true,
+      "email": "sidorov@bankapp.com",
+      "firstName": "Сидор",
+      "lastName": "Сидоров",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "clientRoles": {
+        "accounts-service": ["view_profile"],
+        "cash-service": ["view_account", "execute_cash"],
+        "transfer-service": ["view_account", "execute_transfer"]
+      },
+      "attributes": {
+        "birthdate": "1995-03-10",
+        "phone": "+7(999)345-67-89"
+      }
+    },
+    {
+      "username": "smirnov",
+      "enabled": true,
+      "email": "smirnov@bankapp.com",
+      "firstName": "Алексей",
+      "lastName": "Смирнов",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "clientRoles": {
+        "accounts-service": ["view_profile"],
+        "cash-service": ["view_account", "execute_cash"],
+        "transfer-service": ["view_account", "execute_transfer"]
+      },
+      "attributes": {
+        "birthdate": "2000-12-01",
+        "phone": "+7(999)456-78-90"
+      }
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@bankapp.com",
+      "firstName": "Admin",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user", "admin"]
+    }
+  ],
+
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Regular bank user"
+      },
+      {
+        "name": "admin",
+        "description": "Bank administrator"
+      }
+    ],
+    "client": {
+      "accounts-service": [
+        {
+          "name": "view_profile",
+          "description": "View user profile"
+        },
+        {
+          "name": "manage_account",
+          "description": "Manage user account"
+        },
+        {
+          "name": "view_any_account",
+          "description": "View any account (admin)"
+        }
+      ],
+      "cash-service": [
+        {
+          "name": "view_account",
+          "description": "View account balance"
+        },
+        {
+          "name": "execute_cash",
+          "description": "Execute cash operations"
+        }
+      ],
+      "transfer-service": [
+        {
+          "name": "view_account",
+          "description": "View account balance"
+        },
+        {
+          "name": "execute_transfer",
+          "description": "Execute money transfers"
+        }
+      ]
+    }
+  },
+
+  "scopeMappings": [
+    {
+      "client": "bank-frontend",
+      "roles": ["user"]
+    }
+  ],
+
+  "defaultDefaultClientScopes": ["profile", "email", "roles"],
+  "defaultOptionalClientScopes": ["address", "phone", "offline_access"],
+
+  "browserSecurityHeaders": {
+    "contentSecurityPolicyReportOnly": "",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "DENY",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  },
+
+  "smtpServer": {},
+  "eventsEnabled": false,
+  "eventsListeners": ["jboss-logging"],
+  "enabledEventTypes": []
+}

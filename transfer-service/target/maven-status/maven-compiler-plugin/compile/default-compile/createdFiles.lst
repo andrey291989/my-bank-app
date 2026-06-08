@@ -1,0 +1,14 @@
+ru/yandex/practicum/transfer/repository/TransferTransactionRepository.class
+ru/yandex/practicum/transfer/controller/TransferController.class
+ru/yandex/practicum/transfer/TransferApplication.class
+ru/yandex/practicum/transfer/dto/NotificationRequestDto.class
+ru/yandex/practicum/transfer/config/SecurityConfig.class
+ru/yandex/practicum/transfer/dto/AccountResponseDto.class
+ru/yandex/practicum/transfer/service/AccountsClient.class
+ru/yandex/practicum/transfer/dto/TransferResponseDto.class
+ru/yandex/practicum/transfer/model/TransferTransaction.class
+ru/yandex/practicum/transfer/config/DataSourceConfig.class
+ru/yandex/practicum/transfer/service/TransferService.class
+ru/yandex/practicum/transfer/service/NotificationClient.class
+ru/yandex/practicum/transfer/config/WebClientConfig.class
+ru/yandex/practicum/transfer/dto/TransferRequestDto.class

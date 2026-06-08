@@ -1,0 +1,97 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: transfer-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bank_db
+    username: bank_user
+    password: bank_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: transfer_schema
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    schemas: transfer_schema
+    locations: classpath:db/migration
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
+          jwk-set-uri: http://localhost:9000/protocol/openid-connect/certs
+      client:
+        registration:
+          transfer-client:
+            client-id: transfer-service
+            client-secret: transfer-secret
+            scope: openid,profile
+            authorization-grant-type: client_credentials
+        provider:
+          transfer-client:
+            issuer-uri: http://localhost:9000
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        service-name: transfer-service
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+      config:
+        enabled: true
+        format: YAML
+        prefix: config
+        default-context: application
+
+services:
+  accounts:
+    url: http://accounts-service
+  notifications:
+    url: http://notifications-service
+
+resilience4j:
+  retry:
+    instances:
+      transferRetry:
+        max-attempts: 3
+        wait-duration: 1s
+        retry-exceptions:
+          - java.lang.RuntimeException
+  circuitbreaker:
+    instances:
+      transferCircuitBreaker:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,retries
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    ru.yandex.practicum: DEBUG
+    org.springframework.security: INFO
+    io.github.resilience4j: DEBUG
