@@ -3,6 +3,7 @@ package ru.yandex.practicum.transfer.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 public record TransferRequestDto(
         @NotBlank(message = "From login is required")
@@ -13,6 +14,6 @@ public record TransferRequestDto(
 
         @NotNull(message = "Amount is required")
         @Min(value = 1, message = "Amount must be positive")
-        Integer amount
+        BigDecimal amount
 ) {
 }

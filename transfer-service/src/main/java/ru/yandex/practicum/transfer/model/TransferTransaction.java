@@ -1,6 +1,7 @@
 package ru.yandex.practicum.transfer.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,20 +18,20 @@ public class TransferTransaction {
     @Column(name = "to_login", nullable = false, length = 50)
     private String toLogin;
 
-    @Column(nullable = false)
-    private Integer amount;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal amount;
 
-    @Column(name = "from_balance_before", nullable = false)
-    private Integer fromBalanceBefore;
+    @Column(name = "from_balance_before", nullable = false, precision = 19, scale = 2)
+    private BigDecimal fromBalanceBefore;
 
-    @Column(name = "from_balance_after", nullable = false)
-    private Integer fromBalanceAfter;
+    @Column(name = "from_balance_after", nullable = false, precision = 19, scale = 2)
+    private BigDecimal fromBalanceAfter;
 
-    @Column(name = "to_balance_before", nullable = false)
-    private Integer toBalanceBefore;
+    @Column(name = "to_balance_before", nullable = false, precision = 19, scale = 2)
+    private BigDecimal toBalanceBefore;
 
-    @Column(name = "to_balance_after", nullable = false)
-    private Integer toBalanceAfter;
+    @Column(name = "to_balance_after", nullable = false, precision = 19, scale = 2)
+    private BigDecimal toBalanceAfter;
 
     @Column(name = "status", nullable = false, length = 20)
     private String status;
@@ -43,9 +44,9 @@ public class TransferTransaction {
 
     public TransferTransaction() {}
 
-    public TransferTransaction(String fromLogin, String toLogin, Integer amount,
-                               Integer fromBalanceBefore, Integer fromBalanceAfter,
-                               Integer toBalanceBefore, Integer toBalanceAfter,
+    public TransferTransaction(String fromLogin, String toLogin, BigDecimal amount,
+                               BigDecimal fromBalanceBefore, BigDecimal fromBalanceAfter,
+                               BigDecimal toBalanceBefore, BigDecimal toBalanceAfter,
                                String status) {
         this.fromLogin = fromLogin;
         this.toLogin = toLogin;
@@ -72,20 +73,20 @@ public class TransferTransaction {
     public String getToLogin() { return toLogin; }
     public void setToLogin(String toLogin) { this.toLogin = toLogin; }
 
-    public Integer getAmount() { return amount; }
-    public void setAmount(Integer amount) { this.amount = amount; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 
-    public Integer getFromBalanceBefore() { return fromBalanceBefore; }
-    public void setFromBalanceBefore(Integer fromBalanceBefore) { this.fromBalanceBefore = fromBalanceBefore; }
+    public BigDecimal getFromBalanceBefore() { return fromBalanceBefore; }
+    public void setFromBalanceBefore(BigDecimal fromBalanceBefore) { this.fromBalanceBefore = fromBalanceBefore; }
 
-    public Integer getFromBalanceAfter() { return fromBalanceAfter; }
-    public void setFromBalanceAfter(Integer fromBalanceAfter) { this.fromBalanceAfter = fromBalanceAfter; }
+    public BigDecimal getFromBalanceAfter() { return fromBalanceAfter; }
+    public void setFromBalanceAfter(BigDecimal fromBalanceAfter) { this.fromBalanceAfter = fromBalanceAfter; }
 
-    public Integer getToBalanceBefore() { return toBalanceBefore; }
-    public void setToBalanceBefore(Integer toBalanceBefore) { this.toBalanceBefore = toBalanceBefore; }
+    public BigDecimal getToBalanceBefore() { return toBalanceBefore; }
+    public void setToBalanceBefore(BigDecimal toBalanceBefore) { this.toBalanceBefore = toBalanceBefore; }
 
-    public Integer getToBalanceAfter() { return toBalanceAfter; }
-    public void setToBalanceAfter(Integer toBalanceAfter) { this.toBalanceAfter = toBalanceAfter; }
+    public BigDecimal getToBalanceAfter() { return toBalanceAfter; }
+    public void setToBalanceAfter(BigDecimal toBalanceAfter) { this.toBalanceAfter = toBalanceAfter; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

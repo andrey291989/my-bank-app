@@ -1,10 +1,12 @@
 package ru.yandex.practicum.cash.dto;
 
+import java.math.BigDecimal;
+
 public record CashResponseDto(
         String login,
         String name,
         String birthdate,
-        Integer sum,
+        BigDecimal sum,
         String message
 ) {
 }

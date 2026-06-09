@@ -2,7 +2,6 @@ package ru.yandex.practicum.accounts.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.yandex.practicum.accounts.dto.NotificationRequestDto;
@@ -12,8 +11,11 @@ public class NotificationClient {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationClient.class);
 
-    @Autowired
-    private WebClient webClient;
+    private final WebClient webClient;
+
+    public NotificationClient(WebClient webClient) {
+        this.webClient = webClient;
+    }
 
     public void sendNotification(String userLogin, String message, String type) {
         try {

@@ -4,7 +4,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.transfer.dto.AccountResponseDto;
@@ -13,19 +12,22 @@ import ru.yandex.practicum.transfer.dto.TransferResponseDto;
 import ru.yandex.practicum.transfer.model.TransferTransaction;
 import ru.yandex.practicum.transfer.repository.TransferTransactionRepository;
 
+import java.math.BigDecimal;
+
 @Service
 public class TransferService {
 
     private static final Logger log = LoggerFactory.getLogger(TransferService.class);
 
-    @Autowired
-    private AccountsClient accountsClient;
+    private final AccountsClient accountsClient;
+    private final NotificationClient notificationClient;
+    private final TransferTransactionRepository transactionRepository;
 
-    @Autowired
-    private NotificationClient notificationClient;
-
-    @Autowired
-    private TransferTransactionRepository transactionRepository;
+    public TransferService(AccountsClient accountsClient, NotificationClient notificationClient, TransferTransactionRepository transactionRepository) {
+        this.accountsClient = accountsClient;
+        this.notificationClient = notificationClient;
+        this.transactionRepository = transactionRepository;
+    }
 
     @Transactional
     @Retry(name = "transferRetry", fallbackMethod = "transferFallback")
@@ -34,7 +36,7 @@ public class TransferService {
         // Get source account info before transfer
         AccountResponseDto fromAccountBefore = accountsClient.getAccount(request.fromLogin());
 
-        if (fromAccountBefore.sum() < request.amount()) {
+        if (fromAccountBefore.sum().compareTo(request.amount()) < 0) {
             throw new RuntimeException("Insufficient funds for transfer");
         }
 
@@ -56,7 +58,7 @@ public class TransferService {
                 fromAccountBefore.sum(),
                 fromAccountAfter.sum(),
                 toAccountBefore.sum(),
-                toAccountBefore.sum() + request.amount(),
+                toAccountBefore.sum().add(request.amount()),
                 "SUCCESS"
         );
         transactionRepository.save(transaction);
@@ -64,12 +66,12 @@ public class TransferService {
         // Send notifications
         notificationClient.sendNotification(
                 request.fromLogin(),
-                "You have transferred %d rub to %s".formatted(request.amount(), request.toLogin()),
+                "You have transferred %s rub to %s".formatted(request.amount(), request.toLogin()),
                 "TRANSFER_OUT"
         );
         notificationClient.sendNotification(
                 request.toLogin(),
-                "You have received %d rub from %s".formatted(request.amount(), request.fromLogin()),
+                "You have received %s rub from %s".formatted(request.amount(), request.fromLogin()),
                 "TRANSFER_IN"
         );
 

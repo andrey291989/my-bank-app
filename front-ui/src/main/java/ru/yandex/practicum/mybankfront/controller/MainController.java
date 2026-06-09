@@ -1,6 +1,5 @@
 package ru.yandex.practicum.mybankfront.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
@@ -11,14 +10,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.yandex.practicum.mybankfront.controller.dto.CashAction;
 import ru.yandex.practicum.mybankfront.service.BankApiClient;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 @Controller
 public class MainController {
 
-    @Autowired
-    private BankApiClient bankApiClient;
+    private final BankApiClient bankApiClient;
+
+    public MainController(BankApiClient bankApiClient) {
+        this.bankApiClient = bankApiClient;
+    }
 
     @GetMapping
     public String index() {
@@ -75,7 +78,7 @@ public class MainController {
     public String editCash(
             Model model,
             @AuthenticationPrincipal OidcUser user,
-            @RequestParam("value") int value,
+            @RequestParam("value") BigDecimal value,
             @RequestParam("action") CashAction action
     ) {
         String login = user.getName();
@@ -90,8 +93,8 @@ public class MainController {
             model.addAttribute("accounts", accounts);
 
             String message = action == CashAction.GET
-                    ? "Снято %d руб".formatted(value)
-                    : "Положено %d руб".formatted(value);
+                    ? "Снято %s руб".formatted(value)
+                    : "Положено %s руб".formatted(value);
             model.addAttribute("info", message);
         } catch (Exception e) {
             model.addAttribute("errors", List.of(e.getMessage()));
@@ -105,7 +108,7 @@ public class MainController {
     public String transfer(
             Model model,
             @AuthenticationPrincipal OidcUser user,
-            @RequestParam("value") int value,
+            @RequestParam("value") BigDecimal value,
             @RequestParam("login") String targetLogin
     ) {
         String sourceLogin = user.getName();
@@ -118,7 +121,7 @@ public class MainController {
             model.addAttribute("birthdate", account.getBirthdate());
             model.addAttribute("sum", account.getSum());
             model.addAttribute("accounts", accounts);
-            model.addAttribute("info", "Успешно переведено %d руб клиенту".formatted(value));
+            model.addAttribute("info", "Успешно переведено %s руб клиенту".formatted(value));
         } catch (Exception e) {
             model.addAttribute("errors", List.of(e.getMessage()));
             return getAccount(model, user);

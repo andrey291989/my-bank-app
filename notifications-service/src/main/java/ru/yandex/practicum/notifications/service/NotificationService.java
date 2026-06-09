@@ -2,7 +2,6 @@ package ru.yandex.practicum.notifications.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +16,16 @@ public class NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
+    private final String defaultDeliveryMethod;
 
-    @Autowired
-    private EmailService emailService;
-
-    @Value("${notifications.delivery.method:LOG}")
-    private String defaultDeliveryMethod;
+    public NotificationService(NotificationRepository notificationRepository, EmailService emailService,
+                              @Value("${notifications.delivery.method:LOG}") String defaultDeliveryMethod) {
+        this.notificationRepository = notificationRepository;
+        this.emailService = emailService;
+        this.defaultDeliveryMethod = defaultDeliveryMethod;
+    }
 
     @Transactional
     public void sendNotification(NotificationRequestDto request) {

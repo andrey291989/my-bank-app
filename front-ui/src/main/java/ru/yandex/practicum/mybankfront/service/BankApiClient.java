@@ -1,6 +1,5 @@
 package ru.yandex.practicum.mybankfront.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -8,6 +7,7 @@ import ru.yandex.practicum.mybankfront.controller.dto.AccountDto;
 import ru.yandex.practicum.mybankfront.controller.dto.AccountResponseDto;
 import ru.yandex.practicum.mybankfront.controller.dto.CashAction;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,11 +15,13 @@ import java.util.List;
 @Service
 public class BankApiClient {
 
-    @Autowired
-    private WebClient webClient;
+    private final WebClient webClient;
+    private final String gatewayUrl;
 
-    @Value("${gateway.url:http://localhost:8080}")
-    private String gatewayUrl;
+    public BankApiClient(WebClient webClient, @Value("${gateway.url:http://localhost:8080}") String gatewayUrl) {
+        this.webClient = webClient;
+        this.gatewayUrl = gatewayUrl;
+    }
 
     public AccountResponseDto getAccount(String login) {
         return webClient.get()
@@ -52,7 +54,7 @@ public class BankApiClient {
                 .block();
     }
 
-    public AccountResponseDto cashOperation(String login, int value, CashAction action) {
+    public AccountResponseDto cashOperation(String login, BigDecimal value, CashAction action) {
         return webClient.post()
                 .uri(gatewayUrl + "/api/cash")
                 .bodyValue(new CashRequest(login, value, action))
@@ -61,7 +63,7 @@ public class BankApiClient {
                 .block();
     }
 
-    public AccountResponseDto transfer(String fromLogin, String toLogin, int value) {
+    public AccountResponseDto transfer(String fromLogin, String toLogin, BigDecimal value) {
         return webClient.post()
                 .uri(gatewayUrl + "/api/transfer")
                 .bodyValue(new TransferRequest(fromLogin, toLogin, value))
@@ -72,6 +74,6 @@ public class BankApiClient {
 
     // Inner DTOs for requests
     private record AccountUpdateRequest(String name, String birthdate) {}
-    private record CashRequest(String login, int value, CashAction action) {}
-    private record TransferRequest(String fromLogin, String toLogin, int value) {}
+    private record CashRequest(String login, BigDecimal value, CashAction action) {}
+    private record TransferRequest(String fromLogin, String toLogin, BigDecimal value) {}
 }

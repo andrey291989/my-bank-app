@@ -1,7 +1,6 @@
 package ru.yandex.practicum.notifications.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,8 +13,11 @@ import ru.yandex.practicum.notifications.service.NotificationService;
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
+
+    public NotificationController(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
 
     @PostMapping
     public ResponseEntity<Void> sendNotification(@Valid @RequestBody NotificationRequestDto request) {

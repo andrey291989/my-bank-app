@@ -1,15 +1,17 @@
 package ru.yandex.practicum.mybankfront.controller.dto;
 
+import java.math.BigDecimal;
+
 public class AccountResponseDto {
     private String login;
     private String name;
     private String birthdate;
-    private Integer sum;
+    private BigDecimal sum;
 
     public AccountResponseDto() {
     }
 
-    public AccountResponseDto(String login, String name, String birthdate, Integer sum) {
+    public AccountResponseDto(String login, String name, String birthdate, BigDecimal sum) {
         this.login = login;
         this.name = name;
         this.birthdate = birthdate;
@@ -40,11 +42,11 @@ public class AccountResponseDto {
         this.birthdate = birthdate;
     }
 
-    public Integer getSum() {
+    public BigDecimal getSum() {
         return sum;
     }
 
-    public void setSum(Integer sum) {
+    public void setSum(BigDecimal sum) {
         this.sum = sum;
     }
 }

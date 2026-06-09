@@ -1,6 +1,7 @@
 package ru.yandex.practicum.cash.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,25 +15,25 @@ public class CashTransaction {
     @Column(name = "user_login", nullable = false, length = 50)
     private String userLogin;
 
-    @Column(nullable = false)
-    private Integer amount;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal amount;
 
     @Column(nullable = false, length = 10)
     private String action; // PUT or GET
 
-    @Column(name = "balance_before", nullable = false)
-    private Integer balanceBefore;
+    @Column(name = "balance_before", nullable = false, precision = 19, scale = 2)
+    private BigDecimal balanceBefore;
 
-    @Column(name = "balance_after", nullable = false)
-    private Integer balanceAfter;
+    @Column(name = "balance_after", nullable = false, precision = 19, scale = 2)
+    private BigDecimal balanceAfter;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public CashTransaction() {}
 
-    public CashTransaction(String userLogin, Integer amount, String action,
-                           Integer balanceBefore, Integer balanceAfter) {
+    public CashTransaction(String userLogin, BigDecimal amount, String action,
+                           BigDecimal balanceBefore, BigDecimal balanceAfter) {
         this.userLogin = userLogin;
         this.amount = amount;
         this.action = action;
@@ -52,17 +53,17 @@ public class CashTransaction {
     public String getUserLogin() { return userLogin; }
     public void setUserLogin(String userLogin) { this.userLogin = userLogin; }
 
-    public Integer getAmount() { return amount; }
-    public void setAmount(Integer amount) { this.amount = amount; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 
     public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }
 
-    public Integer getBalanceBefore() { return balanceBefore; }
-    public void setBalanceBefore(Integer balanceBefore) { this.balanceBefore = balanceBefore; }
+    public BigDecimal getBalanceBefore() { return balanceBefore; }
+    public void setBalanceBefore(BigDecimal balanceBefore) { this.balanceBefore = balanceBefore; }
 
-    public Integer getBalanceAfter() { return balanceAfter; }
-    public void setBalanceAfter(Integer balanceAfter) { this.balanceAfter = balanceAfter; }
+    public BigDecimal getBalanceAfter() { return balanceAfter; }
+    public void setBalanceAfter(BigDecimal balanceAfter) { this.balanceAfter = balanceAfter; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

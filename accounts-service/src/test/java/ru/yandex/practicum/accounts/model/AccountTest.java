@@ -2,6 +2,7 @@ package ru.yandex.practicum.accounts.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -15,7 +16,7 @@ class AccountTest {
         String login = "testuser";
         String name = "Test User";
         LocalDate birthdate = LocalDate.of(1990, 1, 1);
-        Integer sum = 1000;
+        BigDecimal sum = new BigDecimal("1000.00");
 
         // When
         Account account = new Account(login, name, birthdate, sum);
@@ -92,7 +93,7 @@ class AccountTest {
     void account_ShouldSetAndGetSum() {
         // Given
         Account account = new Account();
-        Integer sum = 1000;
+        BigDecimal sum = new BigDecimal("1000.00");
 
         // When
         account.setSum(sum);

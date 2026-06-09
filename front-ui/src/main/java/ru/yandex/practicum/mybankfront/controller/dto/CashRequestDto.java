@@ -1,4 +1,6 @@
 package ru.yandex.practicum.mybankfront.controller.dto;
 
-public record CashRequestDto(String login, int value, CashAction action) {
+import java.math.BigDecimal;
+
+public record CashRequestDto(String login, BigDecimal value, CashAction action) {
 }

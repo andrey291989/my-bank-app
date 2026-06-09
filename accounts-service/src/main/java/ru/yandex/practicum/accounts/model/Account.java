@@ -1,6 +1,7 @@
 package ru.yandex.practicum.accounts.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -21,8 +22,8 @@ public class Account {
     @Column(name = "birthdate", nullable = false)
     private LocalDate birthdate;
 
-    @Column(nullable = false)
-    private Integer sum;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal sum;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -33,7 +34,7 @@ public class Account {
     // Constructors
     public Account() {}
 
-    public Account(String login, String name, LocalDate birthdate, Integer sum) {
+    public Account(String login, String name, LocalDate birthdate, BigDecimal sum) {
         this.login = login;
         this.name = name;
         this.birthdate = birthdate;
@@ -63,8 +64,8 @@ public class Account {
     public LocalDate getBirthdate() { return birthdate; }
     public void setBirthdate(LocalDate birthdate) { this.birthdate = birthdate; }
 
-    public Integer getSum() { return sum; }
-    public void setSum(Integer sum) { this.sum = sum; }
+    public BigDecimal getSum() { return sum; }
+    public void setSum(BigDecimal sum) { this.sum = sum; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

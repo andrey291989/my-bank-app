@@ -1,7 +1,6 @@
 package ru.yandex.practicum.cash.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,8 +14,11 @@ import ru.yandex.practicum.cash.service.CashService;
 @RequestMapping("/api/cash")
 public class CashController {
 
-    @Autowired
-    private CashService cashService;
+    private final CashService cashService;
+
+    public CashController(CashService cashService) {
+        this.cashService = cashService;
+    }
 
     @PostMapping
     public ResponseEntity<CashResponseDto> processCash(@Valid @RequestBody CashRequestDto request) {

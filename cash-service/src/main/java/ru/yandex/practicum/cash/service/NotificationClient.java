@@ -2,7 +2,6 @@ package ru.yandex.practicum.cash.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -13,9 +12,11 @@ public class NotificationClient {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationClient.class);
 
-    @Autowired
-    @Qualifier("notificationsWebClient")
-    private WebClient notificationsWebClient;
+    private final WebClient notificationsWebClient;
+
+    public NotificationClient(@Qualifier("notificationsWebClient") WebClient notificationsWebClient) {
+        this.notificationsWebClient = notificationsWebClient;
+    }
 
     public void sendNotification(String userLogin, String message, String type) {
         try {

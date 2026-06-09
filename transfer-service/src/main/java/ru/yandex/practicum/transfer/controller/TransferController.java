@@ -1,7 +1,6 @@
 package ru.yandex.practicum.transfer.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,8 +14,11 @@ import ru.yandex.practicum.transfer.service.TransferService;
 @RequestMapping("/api/transfer")
 public class TransferController {
 
-    @Autowired
-    private TransferService transferService;
+    private final TransferService transferService;
+
+    public TransferController(TransferService transferService) {
+        this.transferService = transferService;
+    }
 
     @PostMapping
     public ResponseEntity<TransferResponseDto> transfer(@Valid @RequestBody TransferRequestDto request) {

@@ -11,6 +11,8 @@ import ru.yandex.practicum.cash.dto.CashResponseDto;
 import ru.yandex.practicum.cash.model.CashTransaction;
 import ru.yandex.practicum.cash.repository.CashTransactionRepository;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -39,7 +41,7 @@ class CashServiceTest {
             "testuser",
             "Test User",
             "1990-01-01",
-            1500
+            new BigDecimal("1500.00")
         );
     }
 
@@ -48,11 +50,11 @@ class CashServiceTest {
         // Given
         CashRequestDto request = new CashRequestDto(
             "testuser",
-            500,
+            new BigDecimal("500.00"),
             CashRequestDto.CashAction.PUT
         );
 
-        when(accountsClient.updateBalance("testuser", 500)).thenReturn(testAccountResponse);
+        when(accountsClient.updateBalance("testuser", new BigDecimal("500.00"))).thenReturn(testAccountResponse);
         when(transactionRepository.save(any(CashTransaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
@@ -62,14 +64,14 @@ class CashServiceTest {
         assertNotNull(result);
         assertEquals("testuser", result.login());
         assertEquals("Test User", result.name());
-        assertEquals(1500, result.sum());
-        assertEquals("Successfully deposited 500 rub", result.message());
+        assertEquals(new BigDecimal("1500.00"), result.sum());
+        assertEquals("Successfully deposited 500.00 rub", result.message());
 
-        verify(accountsClient).updateBalance("testuser", 500);
+        verify(accountsClient).updateBalance("testuser", new BigDecimal("500.00"));
         verify(transactionRepository).save(any(CashTransaction.class));
         verify(notificationClient).sendNotification(
             "testuser",
-            "Deposit: 500 rub added to your account",
+            "Deposit: 500.00 rub added to your account",
             "CASH_OPERATION"
         );
     }
@@ -79,11 +81,11 @@ class CashServiceTest {
         // Given
         CashRequestDto request = new CashRequestDto(
             "testuser",
-            300,
+            new BigDecimal("300.00"),
             CashRequestDto.CashAction.GET
         );
 
-        when(accountsClient.updateBalance("testuser", -300)).thenReturn(testAccountResponse);
+        when(accountsClient.updateBalance("testuser", new BigDecimal("-300.00"))).thenReturn(testAccountResponse);
         when(transactionRepository.save(any(CashTransaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
@@ -93,14 +95,14 @@ class CashServiceTest {
         assertNotNull(result);
         assertEquals("testuser", result.login());
         assertEquals("Test User", result.name());
-        assertEquals(1500, result.sum());
-        assertEquals("Successfully withdrawn 300 rub", result.message());
+        assertEquals(new BigDecimal("1500.00"), result.sum());
+        assertEquals("Successfully withdrawn 300.00 rub", result.message());
 
-        verify(accountsClient).updateBalance("testuser", -300);
+        verify(accountsClient).updateBalance("testuser", new BigDecimal("-300.00"));
         verify(transactionRepository).save(any(CashTransaction.class));
         verify(notificationClient).sendNotification(
             "testuser",
-            "Withdrawal: 300 rub withdrawn from your account",
+            "Withdrawal: 300.00 rub withdrawn from your account",
             "CASH_OPERATION"
         );
     }

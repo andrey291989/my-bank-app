@@ -8,9 +8,14 @@ import org.mockito.MockitoAnnotations;
 import ru.yandex.practicum.accounts.dto.AccountDto;
 import ru.yandex.practicum.accounts.dto.AccountResponseDto;
 import ru.yandex.practicum.accounts.dto.AccountUpdateRequestDto;
+import ru.yandex.practicum.accounts.exceptions.AccountNotFoundException;
+import ru.yandex.practicum.accounts.exceptions.InsufficientFundsException;
+import ru.yandex.practicum.accounts.exceptions.InvalidTransferAmountException;
+import ru.yandex.practicum.accounts.exceptions.UnderAgeException;
 import ru.yandex.practicum.accounts.model.Account;
 import ru.yandex.practicum.accounts.repository.AccountRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -43,14 +48,14 @@ class AccountServiceTest {
             "testuser",
             "Test User",
             LocalDate.of(1990, 1, 1),
-            1000
+            new BigDecimal("1000.00")
         );
 
         testAccountResponse = new AccountResponseDto(
             "testuser",
             "Test User",
             LocalDate.of(1990, 1, 1),
-            1000
+            new BigDecimal("1000.00")
         );
 
         testAccountDto = new AccountDto(
@@ -71,7 +76,7 @@ class AccountServiceTest {
         assertNotNull(result);
         assertEquals("testuser", result.login());
         assertEquals("Test User", result.name());
-        assertEquals(1000, result.sum());
+        assertEquals(new BigDecimal("1000.00"), result.sum());
 
         verify(accountRepository).findByLogin("testuser");
     }
@@ -82,11 +87,11 @@ class AccountServiceTest {
         when(accountRepository.findByLogin("nonexistent")).thenReturn(Optional.empty());
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
             accountService.getAccount("nonexistent");
         });
 
-        assertEquals("Account not found: nonexistent", exception.getMessage());
+        assertEquals("nonexistent", exception.getMessage());
         verify(accountRepository).findByLogin("nonexistent");
     }
 
@@ -120,7 +125,7 @@ class AccountServiceTest {
             "testuser",
             "Updated User",
             LocalDate.of(2000, 1, 1),
-            1000
+            new BigDecimal("1000.00")
         );
 
         when(accountRepository.findByLogin("testuser")).thenReturn(Optional.of(testAccount));
@@ -152,11 +157,11 @@ class AccountServiceTest {
         );
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        UnderAgeException exception = assertThrows(UnderAgeException.class, () -> {
             accountService.updateAccount("testuser", updateRequest);
         });
 
-        assertEquals("User must be over 18 years old", exception.getMessage());
+        assertTrue(exception.getMessage().contains("User must be over 18 years old"));
         verify(accountRepository, never()).findByLogin(anyString());
         verify(accountRepository, never()).save(any(Account.class));
         verify(notificationClient, never()).sendNotification(anyString(), anyString(), anyString());
@@ -169,17 +174,17 @@ class AccountServiceTest {
         when(accountRepository.save(any(Account.class))).thenReturn(testAccount);
 
         // When
-        AccountResponseDto result = accountService.updateBalance("testuser", 500);
+        AccountResponseDto result = accountService.updateBalance("testuser", new BigDecimal("500.00"));
 
         // Then
         assertNotNull(result);
-        assertEquals(1500, result.sum()); // 1000 + 500
+        assertEquals(new BigDecimal("1500.00"), result.sum()); // 1000 + 500
 
         verify(accountRepository).findByLogin("testuser");
         verify(accountRepository).save(testAccount);
         verify(notificationClient).sendNotification(
             "testuser",
-            "Your account has been credited with 500 rub",
+            "Your account has been credited with 500.00 rub",
             "BALANCE_CHANGE"
         );
     }
@@ -191,17 +196,17 @@ class AccountServiceTest {
         when(accountRepository.save(any(Account.class))).thenReturn(testAccount);
 
         // When
-        AccountResponseDto result = accountService.updateBalance("testuser", -300);
+        AccountResponseDto result = accountService.updateBalance("testuser", new BigDecimal("-300.00"));
 
         // Then
         assertNotNull(result);
-        assertEquals(700, result.sum()); // 1000 - 300
+        assertEquals(new BigDecimal("700.00"), result.sum()); // 1000 - 300
 
         verify(accountRepository).findByLogin("testuser");
         verify(accountRepository).save(testAccount);
         verify(notificationClient).sendNotification(
             "testuser",
-            "300 rub has been withdrawn from your account",
+            "300.00 rub has been withdrawn from your account",
             "BALANCE_CHANGE"
         );
     }
@@ -212,11 +217,11 @@ class AccountServiceTest {
         when(accountRepository.findByLogin("testuser")).thenReturn(Optional.of(testAccount));
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            accountService.updateBalance("testuser", -1500); // Trying to withdraw more than available
+        InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> {
+            accountService.updateBalance("testuser", new BigDecimal("-1500.00")); // Trying to withdraw more than available
         });
 
-        assertEquals("Insufficient funds", exception.getMessage());
+        assertTrue(exception.getMessage().contains("Insufficient funds"));
         verify(accountRepository).findByLogin("testuser");
         verify(accountRepository, never()).save(any(Account.class));
         verify(notificationClient, never()).sendNotification(anyString(), anyString(), anyString());
@@ -225,32 +230,32 @@ class AccountServiceTest {
     @Test
     void transfer_ShouldTransferAmountBetweenAccounts() {
         // Given
-        Account fromAccount = new Account("fromuser", "From User", LocalDate.of(1990, 1, 1), 1000);
-        Account toAccount = new Account("touser", "To User", LocalDate.of(1990, 1, 1), 500);
+        Account fromAccount = new Account("fromuser", "From User", LocalDate.of(1990, 1, 1), new BigDecimal("1000.00"));
+        Account toAccount = new Account("touser", "To User", LocalDate.of(1990, 1, 1), new BigDecimal("500.00"));
 
         when(accountRepository.findByLogin("fromuser")).thenReturn(Optional.of(fromAccount));
         when(accountRepository.findByLogin("touser")).thenReturn(Optional.of(toAccount));
         when(accountRepository.save(any(Account.class))).thenReturn(fromAccount).thenReturn(toAccount);
 
         // When
-        AccountResponseDto result = accountService.transfer("fromuser", "touser", 300);
+        AccountResponseDto result = accountService.transfer("fromuser", "touser", new BigDecimal("300.00"));
 
         // Then
         assertNotNull(result);
-        assertEquals(700, fromAccount.getSum()); // 1000 - 300
-        assertEquals(800, toAccount.getSum()); // 500 + 300
+        assertEquals(new BigDecimal("700.00"), fromAccount.getSum()); // 1000 - 300
+        assertEquals(new BigDecimal("800.00"), toAccount.getSum()); // 500 + 300
 
         verify(accountRepository).findByLogin("fromuser");
         verify(accountRepository).findByLogin("touser");
         verify(accountRepository, times(2)).save(any(Account.class));
         verify(notificationClient).sendNotification(
             "fromuser",
-            "You have transferred 300 rub to touser",
+            "You have transferred 300.00 rub to touser",
             "TRANSFER_OUT"
         );
         verify(notificationClient).sendNotification(
             "touser",
-            "You have received 300 rub from fromuser",
+            "You have received 300.00 rub from fromuser",
             "TRANSFER_IN"
         );
     }
@@ -258,11 +263,11 @@ class AccountServiceTest {
     @Test
     void transfer_ShouldThrowException_WhenInvalidAmount() {
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            accountService.transfer("fromuser", "touser", -100);
+        InvalidTransferAmountException exception = assertThrows(InvalidTransferAmountException.class, () -> {
+            accountService.transfer("fromuser", "touser", new BigDecimal("-100.00"));
         });
 
-        assertEquals("Transfer amount must be positive", exception.getMessage());
+        assertTrue(exception.getMessage().contains("Transfer amount must be positive"));
         verify(accountRepository, never()).findByLogin(anyString());
         verify(accountRepository, never()).save(any(Account.class));
         verify(notificationClient, never()).sendNotification(anyString(), anyString(), anyString());
@@ -274,11 +279,11 @@ class AccountServiceTest {
         when(accountRepository.findByLogin("fromuser")).thenReturn(Optional.empty());
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            accountService.transfer("fromuser", "touser", 100);
+        AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
+            accountService.transfer("fromuser", "touser", new BigDecimal("100.00"));
         });
 
-        assertEquals("Source account not found: fromuser", exception.getMessage());
+        assertEquals("fromuser", exception.getMessage());
         verify(accountRepository).findByLogin("fromuser");
         verify(accountRepository, never()).save(any(Account.class));
         verify(notificationClient, never()).sendNotification(anyString(), anyString(), anyString());
@@ -291,11 +296,11 @@ class AccountServiceTest {
         when(accountRepository.findByLogin("touser")).thenReturn(Optional.empty());
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            accountService.transfer("fromuser", "touser", 100);
+        AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
+            accountService.transfer("fromuser", "touser", new BigDecimal("100.00"));
         });
 
-        assertEquals("Target account not found: touser", exception.getMessage());
+        assertEquals("touser", exception.getMessage());
         verify(accountRepository).findByLogin("fromuser");
         verify(accountRepository).findByLogin("touser");
         verify(accountRepository, never()).save(any(Account.class));
@@ -305,18 +310,18 @@ class AccountServiceTest {
     @Test
     void transfer_ShouldThrowException_WhenInsufficientFunds() {
         // Given
-        Account fromAccount = new Account("fromuser", "From User", LocalDate.of(1990, 1, 1), 100);
-        Account toAccount = new Account("touser", "To User", LocalDate.of(1990, 1, 1), 500);
+        Account fromAccount = new Account("fromuser", "From User", LocalDate.of(1990, 1, 1), new BigDecimal("100.00"));
+        Account toAccount = new Account("touser", "To User", LocalDate.of(1990, 1, 1), new BigDecimal("500.00"));
 
         when(accountRepository.findByLogin("fromuser")).thenReturn(Optional.of(fromAccount));
         when(accountRepository.findByLogin("touser")).thenReturn(Optional.of(toAccount));
 
         // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            accountService.transfer("fromuser", "touser", 200); // Trying to transfer more than available
+        InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> {
+            accountService.transfer("fromuser", "touser", new BigDecimal("200.00")); // Trying to transfer more than available
         });
 
-        assertEquals("Insufficient funds for transfer", exception.getMessage());
+        assertTrue(exception.getMessage().contains("Insufficient funds"));
         verify(accountRepository).findByLogin("fromuser");
         verify(accountRepository).findByLogin("touser");
         verify(accountRepository, never()).save(any(Account.class));

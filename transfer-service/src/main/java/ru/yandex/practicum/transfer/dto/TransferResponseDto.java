@@ -1,12 +1,14 @@
 package ru.yandex.practicum.transfer.dto;
 
+import java.math.BigDecimal;
+
 public record TransferResponseDto(
         String fromLogin,
         String fromName,
         String toLogin,
         String toName,
-        Integer amount,
-        Integer newBalance,
+        BigDecimal amount,
+        BigDecimal newBalance,
         String message
 ) {
 }

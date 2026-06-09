@@ -1,7 +1,6 @@
 package ru.yandex.practicum.accounts.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -11,14 +10,18 @@ import ru.yandex.practicum.accounts.dto.AccountResponseDto;
 import ru.yandex.practicum.accounts.dto.AccountUpdateRequestDto;
 import ru.yandex.practicum.accounts.service.AccountService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/accounts")
 public class AccountController {
 
-    @Autowired
-    private AccountService accountService;
+    private final AccountService accountService;
+
+    public AccountController(AccountService accountService) {
+        this.accountService = accountService;
+    }
 
     @GetMapping("/{login}")
     public ResponseEntity<AccountResponseDto> getAccount(@PathVariable String login) {
@@ -44,7 +47,7 @@ public class AccountController {
     @PostMapping("/{login}/balance")
     public ResponseEntity<AccountResponseDto> updateBalance(
             @PathVariable String login,
-            @RequestParam int delta
+            @RequestParam BigDecimal delta
     ) {
         AccountResponseDto account = accountService.updateBalance(login, delta);
         return ResponseEntity.ok(account);
@@ -54,7 +57,7 @@ public class AccountController {
     public ResponseEntity<AccountResponseDto> transfer(
             @RequestParam String from,
             @RequestParam String to,
-            @RequestParam int amount
+            @RequestParam BigDecimal amount
     ) {
         AccountResponseDto account = accountService.transfer(from, to, amount);
         return ResponseEntity.ok(account);
