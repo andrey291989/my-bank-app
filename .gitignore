@@ -1,16 +1,41 @@
-# Исключение файлов и директорий IntelliJ IDEA
+# IntelliJ IDEA
 .idea/
 
-# Исключение целевых директорий сборки
+# Maven
 target/
+*/target/
 
-# Исключение файлов macOS
-.DS_Store
+# Java
+*.class
 
-# Исключение других временных и системных файлов
+# Jar files
+*.jar
+
+# Logs
 *.log
-node_modules/
-dist/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Gradle
+.gradle/
 build/
+
+# Eclipse
+.settings/
+.project
+.classpath
+
+# NetBeans
+nbproject/private/
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# VS Code
+.vscode/
+
+# Temporary files
 *.tmp
-*.swp
+*.temp
