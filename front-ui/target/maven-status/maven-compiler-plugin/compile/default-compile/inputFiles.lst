@@ -1,9 +1,0 @@
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/service/BankApiClient.java
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/MyBankFrontAppApplication.java
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/controller/dto/CashAction.java
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/controller/dto/CashRequestDto.java
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/controller/MainController.java
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/config/WebClientConfig.java
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/controller/dto/AccountResponseDto.java
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/config/SecurityConfig.java
-/Users/ayborisov1/IdeaProjects/my-bank-app/front-ui/src/main/java/ru/yandex/practicum/mybankfront/controller/dto/AccountDto.java

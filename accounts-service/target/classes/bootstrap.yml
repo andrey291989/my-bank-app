@@ -1,7 +1,0 @@
-spring:
-  cloud:
-    consul:
-      config:
-        watch:
-          enabled: true
-        fail-fast: true
