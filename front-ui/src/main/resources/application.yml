@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: front-ui
+  security:
+    oauth2:
+      client:
+        registration:
+          bank-client:
+            client-id: bank-frontend
+            client-secret: frontend-secret
+            scope: openid,profile,email
+            redirect-uri: http://localhost:8080/login/oauth2/code/bank-client
+            authorization-grant-type: authorization_code
+        provider:
+          bank-client:
+            issuer-uri: http://localhost:9000/realms/bank
+
+gateway:
+  url: http://gateway:8081
+
+spring.cloud.consul.enabled: false
+spring.cloud.discovery.enabled: false

@@ -1,0 +1,245 @@
+services:
+  # ==================== INFRASTRUCTURE ====================
+
+  # PostgreSQL для банковских сервисов
+  postgres:
+    image: postgres:16-alpine
+    container_name: bank-postgres
+    environment:
+      POSTGRES_DB: bank_db
+      POSTGRES_USER: bank_user
+      POSTGRES_PASSWORD: bank_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - bank-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank_user -d bank_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL для Keycloak (отдельная база)
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak_db
+      POSTGRES_USER: keycloak_user
+      POSTGRES_PASSWORD: keycloak_password
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    networks:
+      - bank-network
+
+  # Consul (Service Discovery & Config)
+  consul:
+    image: hashicorp/consul:1.18
+    container_name: bank-consul
+    command: agent -server -bootstrap-expect=1 -client=0.0.0.0 -ui
+    ports:
+      - "8500:8500"
+      - "8600:8600"
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - bank-network
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak (OAuth2 Server)
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.5
+    container_name: bank-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak_db
+      KC_DB_USERNAME: keycloak_user
+      KC_DB_PASSWORD: keycloak_password
+      KC_HTTP_PORT: 8080
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "9000:8080"
+    volumes:
+      - ./keycloak-config:/opt/keycloak/data/import
+    networks:
+      - bank-network
+
+  # ==================== MICROSERVICES ====================
+
+  # Gateway API
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    container_name: bank-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
+    ports:
+      - "8081:8081"
+    depends_on:
+      consul:
+        condition: service_healthy
+    networks:
+      - bank-network
+    restart: on-failure
+
+  # Accounts Service
+  accounts-service:
+    build:
+      context: .
+      dockerfile: accounts-service/Dockerfile
+    container_name: bank-accounts-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
+      SPRING_DATASOURCE_USERNAME: bank_user
+      SPRING_DATASOURCE_PASSWORD: bank_password
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_BANK_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    networks:
+      - bank-network
+    restart: on-failure
+
+  # Cash Service
+  cash-service:
+    build:
+      context: .
+      dockerfile: cash-service/Dockerfile
+    container_name: bank-cash-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
+      SPRING_DATASOURCE_USERNAME: bank_user
+      SPRING_DATASOURCE_PASSWORD: bank_password
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_CASH_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SERVICES_ACCOUNTS_URL: http://accounts-service:8082
+      SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    networks:
+      - bank-network
+    restart: on-failure
+
+  # Transfer Service
+  transfer-service:
+    build:
+      context: .
+      dockerfile: transfer-service/Dockerfile
+    container_name: bank-transfer-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
+      SPRING_DATASOURCE_USERNAME: bank_user
+      SPRING_DATASOURCE_PASSWORD: bank_password
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_TRANSFER_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SERVICES_ACCOUNTS_URL: http://accounts-service:8082
+      SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    networks:
+      - bank-network
+    restart: on-failure
+
+  # Notifications Service
+  notifications-service:
+    build:
+      context: .
+      dockerfile: notifications-service/Dockerfile
+    container_name: bank-notifications-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
+      SPRING_DATASOURCE_USERNAME: bank_user
+      SPRING_DATASOURCE_PASSWORD: bank_password
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
+      NOTIFICATIONS_DELIVERY_METHOD: LOG
+    ports:
+      - "8085:8085"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    networks:
+      - bank-network
+    restart: on-failure
+
+  # Front UI
+  front-ui:
+    build:
+      context: .
+      dockerfile: front-ui/Dockerfile
+    container_name: bank-front-ui
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANK_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_BANK_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
+      GATEWAY_URL: http://gateway:8081
+    ports:
+      - "8080:8080"
+    depends_on:
+      gateway:
+        condition: service_started
+      consul:
+        condition: service_healthy
+    networks:
+      - bank-network
+    restart: on-failure
+
+# ==================== VOLUMES ====================
+volumes:
+  postgres_data:
+  keycloak_db_data:
+  consul_data:
+
+# ==================== NETWORKS ====================
+networks:
+  bank-network:
+    driver: bridge
