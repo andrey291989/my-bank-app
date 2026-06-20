@@ -1,0 +1,86 @@
+# Default values for postgresql.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: postgres
+  pullPolicy: IfNotPresent
+  tag: "16-alpine"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 5432
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# PostgreSQL configuration
+postgresql:
+  database: bank_db
+  username: bank_user
+  password: bank_password
+  postgresPassword: postgres_password
+
+persistence:
+  enabled: false
+  # storageClass: ""
+  # size: 8Gi
+
+# Init scripts
+initScripts:
+  enabled: true
+  scripts:
+    init-schemas.sql: |
+      -- Create schemas for each service
+      CREATE SCHEMA IF NOT EXISTS accounts_schema;
+      CREATE SCHEMA IF NOT EXISTS cash_schema;
+      CREATE SCHEMA IF NOT EXISTS transfer_schema;
+      CREATE SCHEMA IF NOT EXISTS notifications_schema;
+
+      -- Grant privileges
+      GRANT ALL PRIVILEGES ON SCHEMA accounts_schema TO bank_user;
+      GRANT ALL PRIVILEGES ON SCHEMA cash_schema TO bank_user;
+      GRANT ALL PRIVILEGES ON SCHEMA transfer_schema TO bank_user;
+      GRANT ALL PRIVILEGES ON SCHEMA notifications_schema TO bank_user;

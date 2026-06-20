@@ -1,0 +1,88 @@
+# Default values for keycloak.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: quay.io/keycloak/keycloak
+  pullPolicy: IfNotPresent
+  tag: "24.0.5"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Keycloak configuration
+keycloak:
+  command: start-dev
+  adminUser: admin
+  adminPassword: admin
+  realm: bank
+
+# Database configuration
+database:
+  vendor: postgres
+  hostname: bank-postgresql
+  port: 5432
+  database: keycloak_db
+  username: keycloak_user
+  password: keycloak_password
+
+# Environment variables for Keycloak
+env:
+  KC_DB: postgres
+  KC_DB_URL: jdbc:postgresql://bank-postgresql:5432/keycloak_db
+  KC_DB_USERNAME: keycloak_user
+  KC_DB_PASSWORD: keycloak_password
+  KC_HTTP_PORT: "8080"
+  KEYCLOAK_ADMIN: admin
+  KEYCLOAK_ADMIN_PASSWORD: admin
+
+# Realm import configuration
+realmImport:
+  enabled: true
+  realm: bank

@@ -1,0 +1,89 @@
+# Default values for cash-service.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: bank/cash-service
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8083
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Database configuration
+database:
+  host: bank-postgresql
+  port: 5432
+  name: bank_db
+  schema: cash_schema
+  username: bank_user
+  password: bank_password
+
+# Environment variables for the cash-service application
+env:
+  SPRING_PROFILES_ACTIVE: kubernetes
+  # Database settings
+  SPRING_DATASOURCE_URL: jdbc:postgresql://bank-postgresql:5432/bank_db
+  SPRING_DATASOURCE_USERNAME: bank_user
+  SPRING_DATASOURCE_PASSWORD: bank_password
+  SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: cash_schema
+  # Keycloak settings
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_CASH_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
+  # Services URLs
+  SERVICES_ACCOUNTS_URL: http://accounts-service:8082
+  SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
