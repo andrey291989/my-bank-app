@@ -24,7 +24,7 @@ data:
 
 ## Secrets
 
-Secrets используются для хранения конфиденциальной информации, такой как пароли, токены и ключи API.
+Secrets используются для хранения конфиденциальной информации, такой как пароли, токены и ключи API. Все пароли хранятся в зашифрованном виде в Kubernetes Secrets и не присутствуют в открытом виде в конфигурационных файлах.
 
 ### Пример Secret для accounts-service:
 
@@ -36,13 +36,16 @@ metadata:
   namespace: bank-app
 type: Opaque
 data:
-  SPRING_DATASOURCE_PASSWORD: YmFua19wYXNzd29yZA==  # bank_password
-  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_ACCOUNTS_CLIENT_CLIENT_SECRET: YWNjb3VudHMtc2VjcmV0  # accounts-secret
+  database-password: <base64-encoded-password>
 ```
+
+### Создание Secrets вручную
+
+Для production среды рекомендуется создавать Secrets вручную. Подробнее о создании Secrets смотрите в разделе "Безопасность" ниже.
 
 ## Переменные окружения
 
-Каждый микросервис получает свою конфигурацию через переменные окружения, которые определены в соответствующих values.yaml файлах Helm чартов.
+Каждый микросервис получает свою конфигурацию через переменные окружения, которые определены в соответствующих values.yaml файлах Helm чартов. Конфиденциальные переменные загружаются из Kubernetes Secrets.
 
 ### Accounts Service
 
@@ -140,3 +143,44 @@ data:
 - `/actuator/info` - информация о сервисе
 
 Логи доступны через команду `kubectl logs`.
+
+## Безопасность
+
+Все конфиденциальные данные хранятся в Kubernetes Secrets и не присутствуют в открытом виде в конфигурационных файлах. При развертывании через CI/CD пайплайн (Jenkins) пароли передаются безопасно через механизмы учетных данных Jenkins.
+
+### Создание Secrets
+
+Для создания Secrets вручную используйте скрипт `create-secrets.sh` или команды kubectl:
+
+```bash
+# Создание Secret для базы данных
+kubectl create secret generic bank-db-secret \
+  --from-literal=user-password='ВАШ_ПАРОЛЬ' \
+  --from-literal=postgres-password='ВАШ_ПАРОЛЬ' \
+  --namespace bank-app
+
+# Создание Secret для Keycloak
+kubectl create secret generic keycloak-secret \
+  --from-literal=admin-password='ВАШ_ПАРОЛЬ' \
+  --from-literal=database-password='ВАШ_ПАРОЛЬ' \
+  --namespace bank-app
+
+# Создание Secret для микросервисов
+kubectl create secret generic accounts-service-secret \
+  --from-literal=database-password='ВАШ_ПАРОЛЬ' \
+  --namespace bank-app
+
+kubectl create secret generic cash-service-secret \
+  --from-literal=database-password='ВАШ_ПАРОЛЬ' \
+  --namespace bank-app
+
+kubectl create secret generic transfer-service-secret \
+  --from-literal=database-password='ВАШ_ПАРОЛЬ' \
+  --namespace bank-app
+
+kubectl create secret generic notifications-service-secret \
+  --from-literal=database-password='ВАШ_ПАРОЛЬ' \
+  --namespace bank-app
+```
+
+**Важно:** В production среде всегда используйте сильные уникальные пароли и регулярно их меняйте.

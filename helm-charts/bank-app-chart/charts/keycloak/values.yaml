@@ -60,7 +60,8 @@ affinity: {}
 keycloak:
   command: start-dev
   adminUser: admin
-  adminPassword: admin
+  # Admin password will be stored in Kubernetes Secret
+  adminPassword: ""
   realm: bank
 
 # Database configuration
@@ -70,17 +71,20 @@ database:
   port: 5432
   database: keycloak_db
   username: keycloak_user
-  password: keycloak_password
+  # Password will be stored in Kubernetes Secret
+  password: ""
 
 # Environment variables for Keycloak
 env:
   KC_DB: postgres
   KC_DB_URL: jdbc:postgresql://bank-postgresql:5432/keycloak_db
   KC_DB_USERNAME: keycloak_user
-  KC_DB_PASSWORD: keycloak_password
+  # Password will be loaded from Kubernetes Secret
+  KC_DB_PASSWORD: ""
   KC_HTTP_PORT: "8080"
   KEYCLOAK_ADMIN: admin
-  KEYCLOAK_ADMIN_PASSWORD: admin
+  # Admin password will be loaded from Kubernetes Secret
+  KEYCLOAK_ADMIN_PASSWORD: ""
 
 # Realm import configuration
 realmImport:

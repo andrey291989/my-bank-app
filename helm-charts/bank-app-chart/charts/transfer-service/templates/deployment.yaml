@@ -39,8 +39,16 @@ spec:
               protocol: TCP
           env:
             {{- range $key, $val := .Values.env }}
+            {{- if eq $key "SPRING_DATASOURCE_PASSWORD" }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "transfer-service.fullname" $ }}-secrets
+                  key: database-password
+            {{- else }}
             - name: {{ $key }}
               value: {{ $val | quote }}
+            {{- end }}
             {{- end }}
           livenessProbe:
             httpGet:

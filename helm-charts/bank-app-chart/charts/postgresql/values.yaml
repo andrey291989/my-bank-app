@@ -60,8 +60,10 @@ affinity: {}
 postgresql:
   database: bank_db
   username: bank_user
-  password: bank_password
-  postgresPassword: postgres_password
+  # Password will be stored in Kubernetes Secret
+  password: ""
+  # Postgres admin password will be stored in Kubernetes Secret
+  postgresPassword: ""
 
 persistence:
   enabled: false

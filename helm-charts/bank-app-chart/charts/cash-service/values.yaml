@@ -70,7 +70,8 @@ database:
   name: bank_db
   schema: cash_schema
   username: bank_user
-  password: bank_password
+  # Password will be stored in Kubernetes Secret
+  password: ""
 
 # Environment variables for the cash-service application
 env:
@@ -78,7 +79,8 @@ env:
   # Database settings
   SPRING_DATASOURCE_URL: jdbc:postgresql://bank-postgresql:5432/bank_db
   SPRING_DATASOURCE_USERNAME: bank_user
-  SPRING_DATASOURCE_PASSWORD: bank_password
+  # Password will be loaded from Kubernetes Secret
+  SPRING_DATASOURCE_PASSWORD: ""
   SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: cash_schema
   # Keycloak settings
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank

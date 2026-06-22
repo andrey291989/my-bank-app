@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Script to build Docker images for all microservices
+# The script will exit immediately if any command fails
+
+set -e  # Exit immediately if a command exits with a non-zero status
 
 echo "Building Docker images for all microservices..."
 

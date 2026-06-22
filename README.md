@@ -63,6 +63,13 @@ cd my-bank-app
 │       │   ├── postgresql/
 │       │   └── keycloak/
 │       └── templates/
+├── Jenkinsfile
+├── build-images.sh
+├── deploy.sh
+├── test-helm.sh
+├── update-config.sh
+├── create-secrets.sh
+├── KUBERNETES_CONFIG.md
 └── README.md
 ```
 
@@ -99,6 +106,25 @@ docker-compose ps
 - Установленный Minikube или другой локальный Kubernetes кластер
 - Установленный kubectl
 - Установленный Helm
+
+### Безопасность
+Все конфиденциальные данные (пароли, токены) хранятся в Kubernetes Secrets и не присутствуют в открытом виде в конфигурационных файлах. Подробнее см. в [KUBERNETES_CONFIG.md](KUBERNETES_CONFIG.md).
+
+### Создание Secrets (обязательно для production)
+Перед развертыванием в production среде создайте Secrets с вашими реальными паролями:
+
+```bash
+# Используйте скрипт для создания тестовых Secrets (только для разработки!)
+./create-secrets.sh
+
+# ИЛИ создайте Secrets вручную с вашими реальными паролями
+kubectl create secret generic bank-db-secret \
+  --from-literal=user-password='ВАШ_ПАРОЛЬ' \
+  --from-literal=postgres-password='ВАШ_ПАРОЛЬ' \
+  --namespace bank-app
+```
+
+Подробные инструкции по созданию Secrets смотрите в [KUBERNETES_CONFIG.md](KUBERNETES_CONFIG.md).
 
 ### Сборка Docker образов
 ```bash
@@ -148,4 +174,45 @@ kubectl logs -n bank-app -l app.kubernetes.io/name=accounts-service
 ### Удаление приложения
 ```bash
 helm uninstall bank-app -n bank-app
+```
+
+## CI/CD Pipeline (Jenkins)
+
+Проект включает Jenkinsfile для автоматической сборки, тестирования и развертывания приложения.
+
+### Этапы пайплайна:
+1. **Checkout** - Получение исходного кода из репозитория
+2. **Build** - Сборка микросервисов с помощью Maven
+3. **Test** - Запуск модульных и интеграционных тестов
+4. **Build Docker Images** - Создание Docker образов для всех микросервисов
+5. **Push Docker Images** - Загрузка образов в Docker Registry
+6. **Helm Lint** - Проверка Helm чартов
+7. **Deploy to Kubernetes** - Развертывание приложения в Kubernetes кластер
+8. **Helm Test** - Запуск тестов Helm чартов
+9. **Verify Deployment** - Проверка успешности развертывания
+
+### Настройка Jenkins:
+1. Установите Jenkins и необходимые плагины:
+   - Kubernetes CLI plugin
+   - Docker Pipeline plugin
+   - Pipeline plugin
+   - Git plugin
+   - Email Extension plugin
+
+2. Настройте учетные данные в Jenkins:
+   - `docker-hub-credentials` - учетные данные для Docker Hub
+   - `kubeconfig-credentials` - файл kubeconfig для доступа к Kubernetes кластеру
+
+3. Создайте новый Pipeline job и укажите путь к Jenkinsfile в репозитории
+
+### Переменные окружения:
+- `DOCKER_REGISTRY` - адрес Docker registry (по умолчанию docker.io)
+- `DOCKER_REPO` - имя репозитория (по умолчанию bank)
+- `HELM_RELEASE_NAME` - имя релиза Helm (по умолчанию bank-app)
+- `HELM_NAMESPACE` - namespace в Kubernetes (по умолчанию bank-app)
+
+### Запуск пайплайна вручную:
+```bash
+# Локальное тестирование Jenkinsfile
+jenkinsfile-runner -w /path/to/jenkins/war -p /path/to/plugins.txt -f Jenkinsfile
 ```

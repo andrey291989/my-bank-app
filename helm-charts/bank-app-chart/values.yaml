@@ -9,21 +9,23 @@ global:
     port: 5432
     database: bank_db
     username: bank_user
-    password: bank_password
+    # Password will be stored in Kubernetes Secret
+    password: ""
   keycloak:
     host: bank-keycloak
     port: 8080
     realm: bank
     adminUser: admin
-    adminPassword: admin
+    # Admin password will be stored in Kubernetes Secret
+    adminPassword: ""
 
 # Enable/disable components
 postgresql:
   enabled: true
   auth:
-    postgresPassword: postgres_password
+    postgresPassword: ""
     username: bank_user
-    password: bank_password
+    password: ""
     database: bank_db
   primary:
     persistence:
@@ -33,14 +35,14 @@ keycloak:
   enabled: true
   auth:
     adminUser: admin
-    adminPassword: admin
+    adminPassword: ""
   postgresql:
     enabled: false
   externalDatabase:
     host: bank-postgresql-keycloak
     port: 5432
     user: keycloak_user
-    password: keycloak_password
+    password: ""
     database: keycloak_db
 
 # Subchart configurations

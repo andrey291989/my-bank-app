@@ -42,8 +42,22 @@ spec:
               protocol: TCP
           env:
             {{- range $key, $val := .Values.env }}
+            {{- if eq $key "KC_DB_PASSWORD" }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "keycloak.fullname" $ }}-secrets
+                  key: database-password
+            {{- else if eq $key "KEYCLOAK_ADMIN_PASSWORD" }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "keycloak.fullname" $ }}-secrets
+                  key: admin-password
+            {{- else }}
             - name: {{ $key }}
               value: {{ $val | quote }}
+            {{- end }}
             {{- end }}
           livenessProbe:
             httpGet:
