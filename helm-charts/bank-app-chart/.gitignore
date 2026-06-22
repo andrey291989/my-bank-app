@@ -1,0 +1,9 @@
+# Helm chart temporary files
+charts/*.tgz
+tmpcharts/
+Chart.lock
+
+# Local development files
+*.swp
+*.tmp
+*~

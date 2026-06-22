@@ -1,0 +1,147 @@
+# Default values for bank-app-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global values accessible to all subcharts
+global:
+  postgresql:
+    host: bank-postgresql
+    port: 5432
+    database: bank_db
+    username: bank_user
+    # Password will be stored in Kubernetes Secret
+    password: ""
+  keycloak:
+    host: bank-keycloak
+    port: 8080
+    realm: bank
+    adminUser: admin
+    # Admin password will be stored in Kubernetes Secret
+    adminPassword: ""
+
+# Enable/disable components
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    username: bank_user
+    password: ""
+    database: bank_db
+  primary:
+    persistence:
+      enabled: false
+
+keycloak:
+  enabled: true
+  auth:
+    adminUser: admin
+    adminPassword: ""
+  postgresql:
+    enabled: false
+  externalDatabase:
+    host: bank-postgresql-keycloak
+    port: 5432
+    user: keycloak_user
+    password: ""
+    database: keycloak_db
+
+# Subchart configurations
+front-ui:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: bank/front-ui
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: true
+    className: ""
+    hosts:
+      - host: bank.local
+        paths:
+          - path: /
+            pathType: Prefix
+  resources: {}
+  autoscaling:
+    enabled: false
+
+gateway:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: bank/gateway
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8081
+  ingress:
+    enabled: true
+    className: ""
+    hosts:
+      - host: api.bank.local
+        paths:
+          - path: /api
+            pathType: Prefix
+  resources: {}
+  autoscaling:
+    enabled: false
+
+accounts-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: bank/accounts-service
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8082
+  resources: {}
+  autoscaling:
+    enabled: false
+
+cash-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: bank/cash-service
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8083
+  resources: {}
+  autoscaling:
+    enabled: false
+
+transfer-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: bank/transfer-service
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8084
+  resources: {}
+  autoscaling:
+    enabled: false
+
+notifications-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: bank/notifications-service
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8085
+  resources: {}
+  autoscaling:
+    enabled: false
