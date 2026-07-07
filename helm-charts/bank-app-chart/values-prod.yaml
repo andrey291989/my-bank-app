@@ -1,0 +1,246 @@
+# Values for production environment
+# This configuration uses high availability resources for production
+
+# Global values accessible to all subcharts
+global:
+  postgresql:
+    host: bank-postgresql
+    port: 5432
+    database: bank_db
+    username: bank_user
+    # Password will be stored in Kubernetes Secret
+    password: ""
+
+# Enable/disable components
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    username: bank_user
+    password: ""
+    database: bank_db
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+keycloak:
+  enabled: true
+  auth:
+    adminUser: admin
+    adminPassword: ""
+  postgresql:
+    enabled: false
+  externalDatabase:
+    host: bank-postgresql-keycloak
+    port: 5432
+    user: keycloak_user
+    password: ""
+    database: keycloak_db
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+# Kafka configuration for production
+kafka:
+  enabled: true
+  zookeeper:
+    enabled: true
+    replicaCount: 3
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+  replicaCount: 3
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    external:
+      protocol: PLAINTEXT
+  service:
+    ports:
+      client: 9092
+  persistence:
+    enabled: true
+    size: 20Gi
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  metrics:
+    kafka:
+      enabled: true
+    jmx:
+      enabled: true
+
+# Subchart configurations
+front-ui:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: bank/front-ui
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: true
+    className: ""
+    hosts:
+      - host: bank.local
+        paths:
+          - path: /
+            pathType: Prefix
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+gateway:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: bank/gateway
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8081
+  ingress:
+    enabled: true
+    className: ""
+    hosts:
+      - host: api.bank.local
+        paths:
+          - path: /api
+            pathType: Prefix
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+accounts-service:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: bank/accounts-service
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8082
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+cash-service:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: bank/cash-service
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8083
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+transfer-service:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: bank/transfer-service
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8084
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+notifications-service:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: bank/notifications-service
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8085
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
