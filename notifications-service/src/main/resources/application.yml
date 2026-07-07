@@ -80,3 +80,10 @@ logging:
     ru.yandex.practicum: DEBUG
     org.springframework.security: INFO
     org.springframework.mail: WARN
+    org.apache.kafka: WARN
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notifications-service-group

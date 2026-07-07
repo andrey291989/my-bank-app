@@ -45,6 +45,30 @@ keycloak:
     password: ""
     database: keycloak_db
 
+# Kafka configuration
+kafka:
+  enabled: true
+  zookeeper:
+    enabled: true
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    external:
+      protocol: PLAINTEXT
+  service:
+    ports:
+      client: 9092
+  persistence:
+    enabled: true
+    size: 8Gi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
 # Subchart configurations
 front-ui:
   enabled: true
