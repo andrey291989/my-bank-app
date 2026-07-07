@@ -1,0 +1,27 @@
+# This file is deprecated in Helm 3. Dependencies are now defined in Chart.yaml
+# Keeping this for backward compatibility with Helm 2
+dependencies:
+  - name: front-ui
+    version: 0.1.0
+    repository: "file://charts/front-ui"
+  - name: gateway
+    version: 0.1.0
+    repository: "file://charts/gateway"
+  - name: accounts-service
+    version: 0.1.0
+    repository: "file://charts/accounts-service"
+  - name: cash-service
+    version: 0.1.0
+    repository: "file://charts/cash-service"
+  - name: transfer-service
+    version: 0.1.0
+    repository: "file://charts/transfer-service"
+  - name: notifications-service
+    version: 0.1.0
+    repository: "file://charts/notifications-service"
+  - name: postgresql
+    version: 0.1.0
+    repository: "file://charts/postgresql"
+  - name: keycloak
+    version: 0.1.0
+    repository: "file://charts/keycloak"
