@@ -51,6 +51,7 @@ cd my-bank-app
 │   ├── Dockerfile
 │   └── pom.xml
 ├── helm-charts/
+│   ├── Jenkinsfile              # Jenkinsfile для развертывания Apache Kafka
 │   └── bank-app-chart/
 │       ├── Chart.yaml
 │       ├── values.yaml
@@ -65,7 +66,7 @@ cd my-bank-app
 │       │   ├── postgresql/
 │       │   └── keycloak/
 │       └── templates/
-├── Jenkinsfile
+├── Jenkinsfile                  # Основной Jenkinsfile для всего приложения
 ├── build-images.sh
 ├── deploy.sh
 ├── test-helm.sh
@@ -190,16 +191,19 @@ helm uninstall bank-app -n bank-app
 
 Проект включает Jenkinsfile для автоматической сборки, тестирования и развертывания приложения.
 
+Также добавлен отдельный Jenkinsfile в директории `helm-charts/` для развертывания Apache Kafka в Kubernetes кластер.
+
 ### Этапы пайплайна:
 1. **Checkout** - Получение исходного кода из репозитория
 2. **Build** - Сборка микросервисов с помощью Maven
 3. **Test** - Запуск модульных и интеграционных тестов
 4. **Build Docker Images** - Создание Docker образов для всех микросервисов
 5. **Push Docker Images** - Загрузка образов в Docker Registry
-6. **Helm Lint** - Проверка Helm чартов
-7. **Deploy to Kubernetes** - Развертывание приложения в Kubernetes кластер
-8. **Helm Test** - Запуск тестов Helm чартов
-9. **Verify Deployment** - Проверка успешности развертывания
+6. **Deploy Kafka** - Развертывание Apache Kafka в отдельном namespace
+7. **Helm Lint** - Проверка Helm чартов
+8. **Deploy to Kubernetes** - Развертывание приложения в Kubernetes кластер
+9. **Helm Test** - Запуск тестов Helm чартов
+10. **Verify Deployment** - Проверка успешности развертывания
 
 ### Настройка Jenkins:
 1. Установите Jenkins и необходимые плагины:
@@ -214,6 +218,8 @@ helm uninstall bank-app -n bank-app
    - `kubeconfig-credentials` - файл kubeconfig для доступа к Kubernetes кластеру
 
 3. Создайте новый Pipeline job и укажите путь к Jenkinsfile в репозитории
+
+Также можно создать отдельный Pipeline job для развертывания только Apache Kafka, указав путь `helm-charts/Jenkinsfile`.
 
 ### Переменные окружения:
 - `DOCKER_REGISTRY` - адрес Docker registry (по умолчанию docker.io)

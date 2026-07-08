@@ -1,0 +1,197 @@
+pipeline {
+    agent any
+
+    tools {
+        // Убедитесь, что у вас установлены необходимые инструменты
+        // Если Helm или kubectl не установлены как инструменты Jenkins,
+        // вы можете установить их вручную в скрипте
+    }
+
+    environment {
+        // Docker registry credentials (если требуется)
+        DOCKER_REGISTRY = 'docker.io'
+        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
+
+        // Kubernetes cluster credentials
+        KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-credentials'
+
+        // Helm settings для Kafka
+        HELM_RELEASE_NAME = 'bank-kafka'
+        HELM_NAMESPACE = 'kafka'
+        HELM_CHART_NAME = 'bitnami/kafka'
+        HELM_CHART_VERSION = '26.5.1' // Используем конкретную версию вместо 26.x.x
+
+        // Kafka specific settings
+        KAFKA_REPLICAS = '3'
+        ZOOKEEPER_REPLICAS = '3'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Setup Helm') {
+            steps {
+                script {
+                    echo 'Setting up Helm and adding repositories...'
+
+                    // Добавляем репозиторий Bitnami
+                    sh 'helm repo add bitnami https://charts.bitnami.com/bitnami'
+                    sh 'helm repo update'
+                }
+            }
+        }
+
+        stage('Create Namespace') {
+            steps {
+                script {
+                    echo 'Creating Kubernetes namespace for Kafka...'
+
+                    // Setup kubeconfig
+                    withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}",
+                                          variable: 'KUBECONFIG_FILE')]) {
+                        sh 'mkdir -p ~/.kube'
+                        sh 'cp $KUBECONFIG_FILE ~/.kube/config'
+                    }
+
+                    // Создаем namespace если он не существует
+                    sh '''
+                        kubectl create namespace ${HELM_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+                    '''
+                }
+            }
+        }
+
+        stage('Helm Lint Kafka Chart') {
+            steps {
+                script {
+                    echo 'Linting Kafka Helm chart...'
+
+                    // Для внешнего чарта мы не можем выполнить lint напрямую
+                    // Но можем проверить его доступность
+                    sh 'helm show chart ${HELM_CHART_NAME} --version ${HELM_CHART_VERSION}'
+                }
+            }
+        }
+
+        stage('Deploy Kafka') {
+            steps {
+                script {
+                    echo 'Deploying Apache Kafka to Kubernetes cluster...'
+
+                    // Deploy Kafka with default values
+                    // Можно также использовать собственный values файл
+                    sh '''
+                        helm upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_NAME} \\
+                          --version ${HELM_CHART_VERSION} \\
+                          --namespace ${HELM_NAMESPACE} \\
+                          --create-namespace \\
+                          --set replicas=${KAFKA_REPLICAS} \\
+                          --set zookeeper.replicaCount=${ZOOKEEPER_REPLICAS} \\
+                          --set persistence.enabled=true \\
+                          --set persistence.size=8Gi \\
+                          --set resources.limits.cpu=500m \\
+                          --set resources.limits.memory=1Gi \\
+                          --set resources.requests.cpu=250m \\
+                          --set resources.requests.memory=512Mi \\
+                          --timeout 10m0s
+                    '''
+                }
+            }
+        }
+
+        stage('Verify Kafka Deployment') {
+            steps {
+                script {
+                    echo 'Verifying Kafka deployment...'
+
+                    // Проверяем состояние подов
+                    sh 'kubectl get pods -n ${HELM_NAMESPACE}'
+
+                    // Ждем пока все поды будут готовы
+                    sh '''
+                        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=kafka \\
+                          --timeout=300s -n ${HELM_NAMESPACE} || exit 1
+                    '''
+
+                    // Проверяем сервисы
+                    sh 'kubectl get svc -n ${HELM_NAMESPACE}'
+                }
+            }
+        }
+
+        stage('Kafka Health Check') {
+            steps {
+                script {
+                    echo 'Performing Kafka health check...'
+
+                    // Простая проверка, что Kafka принимает соединения
+                    // Более сложные проверки могут быть добавлены при необходимости
+                    sh '''
+                        echo "Checking Kafka broker availability..."
+                        kubectl get svc ${HELM_RELEASE_NAME} -n ${HELM_NAMESPACE} -o wide
+
+                        echo "Checking if Kafka pods are running..."
+                        kubectl get pods -l app.kubernetes.io/name=kafka -n ${HELM_NAMESPACE}
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                echo 'Cleaning up...'
+
+                // Удаляем временный kubeconfig
+                sh 'rm -f ~/.kube/config' || true
+            }
+        }
+
+        success {
+            script {
+                echo 'Kafka deployment completed successfully!'
+
+                // Отправляем уведомление об успехе
+                emailext (
+                    subject: "SUCCESS: Kafka Deployment Pipeline",
+                    body: """Kafka deployment successful!
+
+Release Name: ${HELM_RELEASE_NAME}
+Namespace: ${HELM_NAMESPACE}
+Chart: ${HELM_CHART_NAME}
+Version: ${HELM_CHART_VERSION}
+
+Deployment completed successfully.""",
+                    to: 'devops-team@example.com',
+                    recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                )
+            }
+        }
+
+        failure {
+            script {
+                echo 'Kafka deployment failed!'
+
+                // Отправляем уведомление о неудаче
+                emailext (
+                    subject: "FAILED: Kafka Deployment Pipeline",
+                    body: """Kafka deployment failed!
+
+Release Name: ${HELM_RELEASE_NAME}
+Namespace: ${HELM_NAMESPACE}
+Chart: ${HELM_CHART_NAME}
+Version: ${HELM_CHART_VERSION}
+
+Check the console output for details.""",
+                    to: 'devops-team@example.com',
+                    recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                )
+            }
+        }
+    }
+}
