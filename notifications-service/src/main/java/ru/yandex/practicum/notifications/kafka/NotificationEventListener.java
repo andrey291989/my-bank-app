@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.notifications.dto.NotificationEvent;
+import ru.yandex.practicum.shared.kafka.dto.NotificationEvent;
 import ru.yandex.practicum.notifications.service.NotificationService;
 
 @Service

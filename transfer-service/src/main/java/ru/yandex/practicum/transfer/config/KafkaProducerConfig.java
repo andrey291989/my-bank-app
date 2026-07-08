@@ -9,7 +9,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import ru.yandex.practicum.transfer.dto.NotificationEvent;
+import ru.yandex.practicum.shared.kafka.dto.NotificationEvent;
 
 import java.util.HashMap;
 import java.util.Map;

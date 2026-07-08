@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.yandex.practicum.accounts.kafka.NotificationEventProducer;
+import ru.yandex.practicum.shared.kafka.producer.NotificationEventProducer;
 import ru.yandex.practicum.accounts.service.NotificationClient;
 
 import static org.mockito.Mockito.*;

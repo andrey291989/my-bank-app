@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.support.Acknowledgment;
-import ru.yandex.practicum.notifications.dto.NotificationEvent;
+import ru.yandex.practicum.shared.kafka.dto.NotificationEvent;
 import ru.yandex.practicum.notifications.dto.NotificationRequestDto;
 import ru.yandex.practicum.notifications.service.NotificationService;
 

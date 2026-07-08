@@ -3,7 +3,7 @@ package ru.yandex.practicum.cash.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.cash.kafka.NotificationEventProducer;
+import ru.yandex.practicum.shared.kafka.producer.NotificationEventProducer;
 
 @Service
 public class NotificationClient {

@@ -1,5 +1,7 @@
 package ru.yandex.practicum.accounts.kafka;
 
+import ru.yandex.practicum.shared.kafka.producer.NotificationEventProducer;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import ru.yandex.practicum.accounts.dto.NotificationEvent;
+import ru.yandex.practicum.shared.kafka.dto.NotificationEvent;
 
 import java.util.concurrent.CompletableFuture;
 

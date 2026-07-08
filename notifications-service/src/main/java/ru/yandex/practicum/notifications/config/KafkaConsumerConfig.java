@@ -11,7 +11,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import ru.yandex.practicum.notifications.dto.NotificationEvent;
+import ru.yandex.practicum.shared.kafka.dto.NotificationEvent;
 
 import java.util.HashMap;
 import java.util.Map;
