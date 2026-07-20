@@ -47,6 +47,16 @@ data:
 
 Каждый микросервис получает свою конфигурацию через переменные окружения, которые определены в соответствующих values.yaml файлах Helm чартов. Конфиденциальные переменные загружаются из Kubernetes Secrets.
 
+### Apache Kafka
+
+Все микросервисы, кроме gateway и front-ui, используют Apache Kafka для асинхронной обработки уведомлений. Kafka разворачивается как часть Helm chart с использованием Bitnami Helm chart в качестве зависимости.
+
+Основные переменные окружения для Kafka:
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS`: Адрес Kafka брокера (по умолчанию bank-kafka:9092)
+- `SPRING_KAFKA_CONSUMER_GROUP_ID`: Идентификатор группы потребителей для каждого сервиса
+
+Kafka автоматически создает необходимые топики при запуске приложения.
+
 ### Accounts Service
 
 Основные переменные окружения:
@@ -58,6 +68,8 @@ data:
 - `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI`: http://keycloak:8080/realms/bank
 - `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI`: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
 - `SERVICES_NOTIFICATIONS_URL`: http://notifications-service:8085
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS`: bank-kafka:9092
+- `SPRING_KAFKA_CONSUMER_GROUP_ID`: accounts-service-group
 
 ### Cash Service
 
@@ -71,6 +83,8 @@ data:
 - `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI`: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
 - `SERVICES_ACCOUNTS_URL`: http://accounts-service:8082
 - `SERVICES_NOTIFICATIONS_URL`: http://notifications-service:8085
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS`: bank-kafka:9092
+- `SPRING_KAFKA_CONSUMER_GROUP_ID`: cash-service-group
 
 ### Transfer Service
 
@@ -84,6 +98,8 @@ data:
 - `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI`: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
 - `SERVICES_ACCOUNTS_URL`: http://accounts-service:8082
 - `SERVICES_NOTIFICATIONS_URL`: http://notifications-service:8085
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS`: bank-kafka:9092
+- `SPRING_KAFKA_CONSUMER_GROUP_ID`: transfer-service-group
 
 ### Notifications Service
 
@@ -96,6 +112,8 @@ data:
 - `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI`: http://keycloak:8080/realms/bank
 - `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI`: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
 - `NOTIFICATIONS_DELIVERY_METHOD`: LOG
+- `SPRING_KAFKA_BOOTSTRAP_SERVERS`: bank-kafka:9092
+- `SPRING_KAFKA_CONSUMER_GROUP_ID`: notifications-service-group
 
 ### Gateway Service
 

@@ -76,3 +76,10 @@ logging:
   level:
     ru.yandex.practicum: DEBUG
     org.springframework.security: INFO
+    org.apache.kafka: WARN
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: accounts-service-group

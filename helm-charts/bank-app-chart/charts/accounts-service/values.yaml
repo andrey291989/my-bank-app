@@ -88,3 +88,6 @@ env:
   SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_ACCOUNTS_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
   # Services URLs
   SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
+  # Kafka settings
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: bank-kafka:9092
+  SPRING_KAFKA_CONSUMER_GROUP_ID: accounts-service-group

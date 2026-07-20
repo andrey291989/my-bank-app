@@ -33,3 +33,7 @@ dependencies:
     version: 18.x.x
     repository: https://charts.bitnami.com/bitnami
     condition: keycloak.enabled
+  - name: kafka
+    version: 26.x.x
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled

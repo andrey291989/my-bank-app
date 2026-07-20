@@ -95,6 +95,51 @@ pipeline {
             }
         }
 
+        stage('Deploy Kafka') {
+            steps {
+                script {
+                    echo 'Deploying Apache Kafka...'
+
+                    // Setup kubeconfig
+                    withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}",
+                                          variable: 'KUBECONFIG_FILE')]) {
+                        sh 'mkdir -p ~/.kube'
+                        sh 'cp $KUBECONFIG_FILE ~/.kube/config'
+                    }
+
+                    // Add Helm repositories
+                    sh 'helm repo add bitnami https://charts.bitnami.com/bitnami'
+                    sh 'helm repo update'
+
+                    // Deploy Kafka to its own namespace
+                    sh '''
+                        helm upgrade --install bank-kafka bitnami/kafka \\
+                          --version 26.5.1 \\
+                          --namespace kafka \\
+                          --create-namespace \\
+                          --set replicas=3 \\
+                          --set zookeeper.replicaCount=3 \\
+                          --set persistence.enabled=true \\
+                          --set persistence.size=8Gi \\
+                          --set resources.limits.cpu=500m \\
+                          --set resources.limits.memory=1Gi \\
+                          --set resources.requests.cpu=250m \\
+                          --set resources.requests.memory=512Mi \\
+                          --timeout 10m0s
+                    '''
+
+                    // Verify Kafka deployment
+                    sh 'kubectl get pods -n kafka'
+
+                    // Wait for Kafka pods to be ready
+                    sh '''
+                        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=kafka \\
+                          --timeout=300s -n kafka || exit 1
+                    '''
+                }
+            }
+        }
+
         stage('Helm Lint') {
             steps {
                 script {

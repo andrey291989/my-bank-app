@@ -62,6 +62,13 @@ spring:
         prefix: config
         default-context: application
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notifications-service-group
+    listener:
+      ack-mode: manual
+
 notifications:
   delivery:
     method: ${NOTIFICATION_DELIVERY_METHOD:LOG} # LOG or EMAIL
@@ -80,3 +87,4 @@ logging:
     ru.yandex.practicum: DEBUG
     org.springframework.security: INFO
     org.springframework.mail: WARN
+    org.apache.kafka: WARN

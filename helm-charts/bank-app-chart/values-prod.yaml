@@ -1,6 +1,5 @@
-# Default values for bank-app-chart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Values for production environment
+# This configuration uses high availability resources for production
 
 # Global values accessible to all subcharts
 global:
@@ -11,13 +10,6 @@ global:
     username: bank_user
     # Password will be stored in Kubernetes Secret
     password: ""
-  keycloak:
-    host: bank-keycloak
-    port: 8080
-    realm: bank
-    adminUser: admin
-    # Admin password will be stored in Kubernetes Secret
-    adminPassword: ""
 
 # Enable/disable components
 postgresql:
@@ -29,7 +21,15 @@ postgresql:
     database: bank_db
   primary:
     persistence:
-      enabled: false
+      enabled: true
+      size: 10Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
 
 keycloak:
   enabled: true
@@ -44,12 +44,28 @@ keycloak:
     user: keycloak_user
     password: ""
     database: keycloak_db
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
 
-# Kafka configuration
+# Kafka configuration for production
 kafka:
   enabled: true
   zookeeper:
     enabled: true
+    replicaCount: 3
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+  replicaCount: 3
   listeners:
     client:
       protocol: PLAINTEXT
@@ -60,19 +76,24 @@ kafka:
       client: 9092
   persistence:
     enabled: true
-    size: 8Gi
+    size: 20Gi
   resources:
     limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
       cpu: 500m
       memory: 1Gi
-    requests:
-      cpu: 250m
-      memory: 512Mi
+  metrics:
+    kafka:
+      enabled: true
+    jmx:
+      enabled: true
 
 # Subchart configurations
 front-ui:
   enabled: true
-  replicaCount: 1
+  replicaCount: 2
   image:
     repository: bank/front-ui
     pullPolicy: IfNotPresent
@@ -88,13 +109,22 @@ front-ui:
         paths:
           - path: /
             pathType: Prefix
-  resources: {}
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
-    enabled: false
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
 
 gateway:
   enabled: true
-  replicaCount: 1
+  replicaCount: 2
   image:
     repository: bank/gateway
     pullPolicy: IfNotPresent
@@ -110,13 +140,22 @@ gateway:
         paths:
           - path: /api
             pathType: Prefix
-  resources: {}
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
   autoscaling:
-    enabled: false
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
 
 accounts-service:
   enabled: true
-  replicaCount: 1
+  replicaCount: 2
   image:
     repository: bank/accounts-service
     pullPolicy: IfNotPresent
@@ -124,13 +163,22 @@ accounts-service:
   service:
     type: ClusterIP
     port: 8082
-  resources: {}
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
   autoscaling:
-    enabled: false
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
 
 cash-service:
   enabled: true
-  replicaCount: 1
+  replicaCount: 2
   image:
     repository: bank/cash-service
     pullPolicy: IfNotPresent
@@ -138,13 +186,22 @@ cash-service:
   service:
     type: ClusterIP
     port: 8083
-  resources: {}
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
   autoscaling:
-    enabled: false
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
 
 transfer-service:
   enabled: true
-  replicaCount: 1
+  replicaCount: 2
   image:
     repository: bank/transfer-service
     pullPolicy: IfNotPresent
@@ -152,13 +209,22 @@ transfer-service:
   service:
     type: ClusterIP
     port: 8084
-  resources: {}
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
   autoscaling:
-    enabled: false
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
 
 notifications-service:
   enabled: true
-  replicaCount: 1
+  replicaCount: 2
   image:
     repository: bank/notifications-service
     pullPolicy: IfNotPresent
@@ -166,6 +232,15 @@ notifications-service:
   service:
     type: ClusterIP
     port: 8085
-  resources: {}
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
   autoscaling:
-    enabled: false
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80

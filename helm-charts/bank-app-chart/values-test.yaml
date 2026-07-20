@@ -1,6 +1,5 @@
-# Default values for bank-app-chart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Values for testing environment
+# This configuration uses medium resources for testing
 
 # Global values accessible to all subcharts
 global:
@@ -11,13 +10,6 @@ global:
     username: bank_user
     # Password will be stored in Kubernetes Secret
     password: ""
-  keycloak:
-    host: bank-keycloak
-    port: 8080
-    realm: bank
-    adminUser: admin
-    # Admin password will be stored in Kubernetes Secret
-    adminPassword: ""
 
 # Enable/disable components
 postgresql:
@@ -29,7 +21,8 @@ postgresql:
     database: bank_db
   primary:
     persistence:
-      enabled: false
+      enabled: true
+      size: 2Gi
 
 keycloak:
   enabled: true
@@ -45,11 +38,20 @@ keycloak:
     password: ""
     database: keycloak_db
 
-# Kafka configuration
+# Kafka configuration for testing
 kafka:
   enabled: true
   zookeeper:
     enabled: true
+    replicaCount: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  replicaCount: 1
   listeners:
     client:
       protocol: PLAINTEXT
@@ -60,14 +62,14 @@ kafka:
       client: 9092
   persistence:
     enabled: true
-    size: 8Gi
+    size: 4Gi
   resources:
     limits:
       cpu: 500m
-      memory: 1Gi
+      memory: 512Mi
     requests:
       cpu: 250m
-      memory: 512Mi
+      memory: 256Mi
 
 # Subchart configurations
 front-ui:
@@ -88,7 +90,13 @@ front-ui:
         paths:
           - path: /
             pathType: Prefix
-  resources: {}
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
   autoscaling:
     enabled: false
 
@@ -110,7 +118,13 @@ gateway:
         paths:
           - path: /api
             pathType: Prefix
-  resources: {}
+  resources:
+    limits:
+      cpu: 300m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
   autoscaling:
     enabled: false
 
@@ -124,7 +138,13 @@ accounts-service:
   service:
     type: ClusterIP
     port: 8082
-  resources: {}
+  resources:
+    limits:
+      cpu: 300m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
   autoscaling:
     enabled: false
 
@@ -138,7 +158,13 @@ cash-service:
   service:
     type: ClusterIP
     port: 8083
-  resources: {}
+  resources:
+    limits:
+      cpu: 300m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
   autoscaling:
     enabled: false
 
@@ -152,7 +178,13 @@ transfer-service:
   service:
     type: ClusterIP
     port: 8084
-  resources: {}
+  resources:
+    limits:
+      cpu: 300m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
   autoscaling:
     enabled: false
 
@@ -166,6 +198,12 @@ notifications-service:
   service:
     type: ClusterIP
     port: 8085
-  resources: {}
+  resources:
+    limits:
+      cpu: 300m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 192Mi
   autoscaling:
     enabled: false

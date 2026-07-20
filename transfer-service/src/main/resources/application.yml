@@ -95,3 +95,10 @@ logging:
     ru.yandex.practicum: DEBUG
     org.springframework.security: INFO
     io.github.resilience4j: DEBUG
+    org.apache.kafka: WARN
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: transfer-service-group
