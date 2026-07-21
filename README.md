@@ -15,6 +15,18 @@
 | **Keycloak** | 9000 | OAuth2 сервер авторизации (Admin UI) |
 | **PostgreSQL** | 5432 | База данных |
 
+### Компоненты наблюдаемости (Observability)
+
+| Компонент | Порт | Описание |
+|-----------|------|----------|
+| **Zipkin** | 9411 | Распределённая трассировка (Micrometer Tracing + Brave) |
+| **Prometheus** | 9090 | Сбор метрик (Actuator + Micrometer) |
+| **Alertmanager** | 9093 | Маршрутизация алертов Prometheus |
+| **Grafana** | 3000 | Дашборды метрик (admin/admin) |
+| **Elasticsearch** | 9200 | Хранение логов |
+| **Logstash** | 5000 | Приём и обработка логов (TCP, JSON) |
+| **Kibana** | 5601 | Визуализация логов |
+
 ## Быстрый старт (Docker)
 
 ### 1. Клонирование репозитория
@@ -50,6 +62,14 @@ cd my-bank-app
 ├── notifications-service/
 │   ├── Dockerfile
 │   └── pom.xml
+├── zipkin/                     # Конфигурация Zipkin (трассировка)
+│   └── README.md
+├── prometheus/                 # prometheus.yml, alert.rules.yml, alertmanager.yml
+├── grafana/                    # provisioning (datasource, dashboards) + JSON-дашборды
+│   ├── provisioning/
+│   └── dashboards/
+├── elk/                        # Elasticsearch + Logstash + Kibana
+│   └── logstash/
 ├── helm-charts/
 │   ├── Jenkinsfile              # Jenkinsfile для развертывания Apache Kafka
 │   └── bank-app-chart/
@@ -106,6 +126,95 @@ docker-compose logs -f accounts-service
 ```bash
 docker-compose ps
 ```
+
+## Локальная сборка и тесты (без Docker)
+
+Требуется **JDK 21** и Maven. Сборка всех модулей и запуск тестов:
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)   # macOS
+./mvnw clean test      # или: mvn clean test
+```
+
+Отдельный сервис можно запустить локально (при поднятой инфраструктуре в Docker):
+
+```bash
+mvn -pl accounts-service spring-boot:run
+```
+
+При локальном запуске без Docker трейсы и логи по умолчанию идут на
+`localhost:9411` (Zipkin) и `localhost:5000` (Logstash); адреса переопределяются
+переменными `ZIPKIN_ENDPOINT`, `LOGSTASH_HOST`, `LOGSTASH_PORT`.
+
+## Наблюдаемость: трассировка, метрики, логирование
+
+Все компоненты наблюдаемости поднимаются автоматически вместе с приложением
+(`docker-compose up -d`). Их конфигурация хранится в подпроектах `zipkin/`,
+`prometheus/`, `grafana/`, `elk/`.
+
+### Точки доступа
+
+| Инструмент | URL | Назначение |
+|------------|-----|-----------|
+| Zipkin | http://localhost:9411 | Трейсы запросов между сервисами, в БД и Kafka |
+| Prometheus | http://localhost:9090 | Метрики и правила алертов (*Status → Targets*, *Alerts*) |
+| Alertmanager | http://localhost:9093 | Активные алерты |
+| Grafana | http://localhost:3000 | Дашборды (логин `admin` / `admin`), папка **Bank** |
+| Kibana | http://localhost:5601 | Логи микросервисов и Front UI |
+
+### Трассировка (Zipkin)
+
+* Поставка трейсов — через **Micrometer Tracing** (`micrometer-tracing-bridge-brave`,
+  `zipkin-reporter-brave`).
+* Трассируются входящие/исходящие HTTP-запросы, запросы в БД
+  (`datasource-micrometer`) и в Apache Kafka (observation у `KafkaTemplate` и
+  listener-контейнера).
+* Front UI генерирует `trace id`; далее `trace id` и `span id` пробрасываются в
+  заголовках между сервисами. Те же `traceId`/`spanId` попадают в логи (Kibana),
+  что позволяет связать логи с трейсами. Подробнее — `zipkin/README.md`.
+
+### Метрики (Prometheus + Grafana)
+
+* Метрики отдаёт каждый сервис по `/actuator/prometheus`.
+* Стандартные: HTTP (RPS, 4xx, 5xx, персентили таймингов), JVM (память, CPU, GC,
+  потоки), метрики Spring Boot.
+* Кастомные бизнес-метрики:
+  * `bank_cash_withdrawal_failed_total{login}` — неуспешные снятия;
+  * `bank_transfer_failed_total{from_login,to_login}` — неуспешные переводы;
+  * `bank_notification_send_failed_total{login}` — невозможность отправки уведомления.
+* Дашборды Grafana: HTTP-метрики, JVM-метрики, бизнес-метрики (папка **Bank**).
+* Алерты по превышению порогов настроены в Prometheus/Alertmanager
+  (`prometheus/alert.rules.yml`). Подробнее — `prometheus/README.md`, `grafana/README.md`.
+
+### Логирование (ELK)
+
+* Логирование через **SLF4J + Logback** в едином JSON-формате
+  (`logstash-logback-encoder`, паттерн Microservice Chassis — `logback-spring.xml`
+  в каждом модуле).
+* Логи отправляются в **Logstash** (TCP `5000`), фильтруются (маскирование паролей и
+  номеров счетов/карт) и пишутся в **Elasticsearch**, визуализируются в **Kibana**.
+* В каждой записи присутствуют `traceId` и `spanId` для связи с трейсами в Zipkin.
+* Уровни: `ERROR` (ошибки), `WARN` (неуспешные бизнес-операции), `INFO` (ключевые
+  операции), `DEBUG` (диагностика). Подробнее — `elk/README.md`.
+
+### Быстрая проверка
+
+```bash
+# метрики сервиса
+curl -s http://localhost:8082/actuator/prometheus | head
+
+# цели Prometheus (должны быть UP)
+open http://localhost:9090/targets
+
+# трейсы — выполните операцию во фронте (http://localhost:8080), затем:
+open http://localhost:9411
+
+# логи — в Kibana создайте data view "bank-logs-*" (timestamp @timestamp) и откройте Discover
+open http://localhost:5601
+```
+
+> Первый старт Elasticsearch/Kibana может занять 1–2 минуты. Kibana требует
+> однократного создания data view `bank-logs-*` (см. `elk/README.md`).
 
 ## Развертывание в Kubernetes (Helm)
 

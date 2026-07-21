@@ -12,8 +12,10 @@ public class WebClientConfig {
     private String gatewayUrl;
 
     @Bean
-    public WebClient webClient() {
-        return WebClient.builder()
+    public WebClient webClient(WebClient.Builder builder) {
+        // Используем авто-конфигурированный WebClient.Builder (с ObservationWebClientCustomizer),
+        // чтобы исходящие HTTP-запросы попадали в трейс и пробрасывали trace id / span id в заголовках.
+        return builder
                 .baseUrl(gatewayUrl)
                 .build();
     }

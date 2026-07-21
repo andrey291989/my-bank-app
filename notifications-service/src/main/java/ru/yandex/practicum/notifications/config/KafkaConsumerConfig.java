@@ -50,6 +50,8 @@ public class KafkaConsumerConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        // Трейсинг входящих сообщений Kafka в Zipkin (Micrometer Observation)
+        factory.getContainerProperties().setObservationEnabled(true);
         return factory;
     }
 }

@@ -81,14 +81,36 @@ resilience4j:
         wait-duration-in-open-state: 10s
         permitted-number-of-calls-in-half-open-state: 3
 
+# ==================== Observability (метрики + трейсинг) ====================
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,circuitbreakers,retries
+        include: health,info,prometheus,metrics,circuitbreakers,retries
   endpoint:
     health:
       show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
+
+# Хост Logstash для доставки логов (используется в logback-spring.xml)
+logstash:
+  host: ${LOGSTASH_HOST:localhost}
+  port: ${LOGSTASH_PORT:5000}
 
 logging:
   level:

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Единый формат логирования для всех сервисов приложения "Банк"
+  (реализация паттерна Microservice Chassis).
+
+  * CONSOLE  — человекочитаемый формат с trace id / span id для локальной отладки.
+  * LOGSTASH — единый JSON-формат, доставка в Logstash (ELK) по TCP.
+                В каждую запись добавляются MDC-поля traceId и spanId
+                (заполняются Micrometer Tracing), что позволяет связать логи
+                в Kibana с трейсами в Zipkin.
+-->
+<configuration scan="true" scanPeriod="30 seconds">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="unknown"/>
+    <springProperty scope="context" name="logstashHost" source="logstash.host" defaultValue="localhost"/>
+    <springProperty scope="context" name="logstashPort" source="logstash.port" defaultValue="5000"/>
+
+    <!-- Консоль: паттерн [сервис,traceId,spanId] -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [${appName:-},%X{traceId:-},%X{spanId:-}] %cyan(%logger{36}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Logstash: единый JSON-формат (Microservice Chassis) -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logstashHost}:${logstashPort}</destination>
+        <keepAliveDuration>5 minutes</keepAliveDuration>
+        <reconnectionDelay>5 seconds</reconnectionDelay>
+        <!-- Не блокировать приложение, если Logstash недоступен -->
+        <writeBufferSize>16384</writeBufferSize>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <customFields>{"service":"${appName}"}</customFields>
+            <fieldNames>
+                <timestamp>@timestamp</timestamp>
+                <levelValue>[ignore]</levelValue>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <!-- Асинхронная обёртка над Logstash-аппендером -->
+    <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="LOGSTASH"/>
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_LOGSTASH"/>
+    </root>
+</configuration>

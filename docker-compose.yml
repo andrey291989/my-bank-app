@@ -1,3 +1,9 @@
+# Общие переменные окружения observability (Zipkin, Logstash) для всех приложений
+x-observability-env: &observability-env
+  ZIPKIN_ENDPOINT: "http://zipkin:9411/api/v2/spans"
+  LOGSTASH_HOST: "logstash"
+  LOGSTASH_PORT: "5000"
+
 services:
   # ==================== INFRASTRUCTURE ====================
 
@@ -112,6 +118,7 @@ services:
       dockerfile: gateway/Dockerfile
     container_name: bank-gateway
     environment:
+      <<: *observability-env
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
@@ -133,6 +140,7 @@ services:
       dockerfile: accounts-service/Dockerfile
     container_name: bank-accounts-service
     environment:
+      <<: *observability-env
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
       SPRING_DATASOURCE_USERNAME: bank_user
@@ -165,6 +173,7 @@ services:
       dockerfile: cash-service/Dockerfile
     container_name: bank-cash-service
     environment:
+      <<: *observability-env
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
       SPRING_DATASOURCE_USERNAME: bank_user
@@ -198,6 +207,7 @@ services:
       dockerfile: transfer-service/Dockerfile
     container_name: bank-transfer-service
     environment:
+      <<: *observability-env
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
       SPRING_DATASOURCE_USERNAME: bank_user
@@ -231,6 +241,7 @@ services:
       dockerfile: notifications-service/Dockerfile
     container_name: bank-notifications-service
     environment:
+      <<: *observability-env
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
       SPRING_DATASOURCE_USERNAME: bank_user
@@ -262,6 +273,7 @@ services:
       dockerfile: front-ui/Dockerfile
     container_name: bank-front-ui
     environment:
+      <<: *observability-env
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_CLOUD_CONSUL_PORT: 8500
@@ -279,11 +291,116 @@ services:
       - bank-network
     restart: on-failure
 
+  # ==================== OBSERVABILITY ====================
+
+  # Zipkin — распределённая трассировка (in-memory хранилище)
+  zipkin:
+    image: openzipkin/zipkin:3
+    container_name: bank-zipkin
+    environment:
+      STORAGE_TYPE: mem
+    ports:
+      - "9411:9411"
+    networks:
+      - bank-network
+
+  # Prometheus — сбор метрик
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: bank-prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    depends_on:
+      - alertmanager
+    networks:
+      - bank-network
+
+  # Alertmanager — маршрутизация алертов
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: bank-alertmanager
+    volumes:
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    ports:
+      - "9093:9093"
+    networks:
+      - bank-network
+
+  # Grafana — визуализация метрик
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: bank-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - bank-network
+
+  # Elasticsearch — хранение логов
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: bank-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - bank-network
+
+  # Logstash — обработка и доставка логов в Elasticsearch
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.4
+    container_name: bank-logstash
+    volumes:
+      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    ports:
+      - "5000:5000"
+    depends_on:
+      - elasticsearch
+    networks:
+      - bank-network
+
+  # Kibana — визуализация логов
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: bank-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - bank-network
+
 # ==================== VOLUMES ====================
 volumes:
   postgres_data:
   keycloak_db_data:
   consul_data:
+  grafana_data:
+  es_data:
 
 # ==================== NETWORKS ====================
 networks:

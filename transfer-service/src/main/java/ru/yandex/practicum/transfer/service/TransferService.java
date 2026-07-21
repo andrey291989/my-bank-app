@@ -2,6 +2,7 @@ package ru.yandex.practicum.transfer.service;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,17 +23,21 @@ public class TransferService {
     private final AccountsClient accountsClient;
     private final NotificationClient notificationClient;
     private final TransferTransactionRepository transactionRepository;
+    private final MeterRegistry meterRegistry;
 
-    public TransferService(AccountsClient accountsClient, NotificationClient notificationClient, TransferTransactionRepository transactionRepository) {
+    public TransferService(AccountsClient accountsClient, NotificationClient notificationClient,
+                           TransferTransactionRepository transactionRepository, MeterRegistry meterRegistry) {
         this.accountsClient = accountsClient;
         this.notificationClient = notificationClient;
         this.transactionRepository = transactionRepository;
+        this.meterRegistry = meterRegistry;
     }
 
     @Transactional
     @Retry(name = "transferRetry", fallbackMethod = "transferFallback")
     @CircuitBreaker(name = "transferCircuitBreaker", fallbackMethod = "transferFallback")
     public TransferResponseDto processTransfer(TransferRequestDto request) {
+        log.info("Начало перевода {} от '{}' к '{}'", request.amount(), request.fromLogin(), request.toLogin());
         // Get source account info before transfer
         AccountResponseDto fromAccountBefore = accountsClient.getAccount(request.fromLogin());
 
@@ -75,6 +80,9 @@ public class TransferService {
                 "TRANSFER_IN"
         );
 
+        log.info("Перевод {} от '{}' к '{}' успешно выполнен, баланс отправителя: {}",
+                request.amount(), request.fromLogin(), request.toLogin(), fromAccountAfter.sum());
+
         return new TransferResponseDto(
                 fromAccountAfter.login(),
                 fromAccountAfter.name(),
@@ -88,7 +96,12 @@ public class TransferService {
 
     @SuppressWarnings("unused")
     private TransferResponseDto transferFallback(TransferRequestDto request, Throwable t) {
-        log.error("Transfer failed for request {}: {}", request, t.getMessage());
+        // Кастомная бизнес-метрика: неуспешные попытки перевода (группировка по логинам отправителя и получателя)
+        meterRegistry.counter("bank.transfer.failed",
+                "from_login", request.fromLogin(),
+                "to_login", request.toLogin()).increment();
+        log.warn("Неуспешная попытка перевода {} от '{}' к '{}': {}",
+                request.amount(), request.fromLogin(), request.toLogin(), t.getMessage());
 
         // Record failed transaction
         TransferTransaction transaction = new TransferTransaction(
