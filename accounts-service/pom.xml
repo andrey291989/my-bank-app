@@ -170,6 +170,12 @@
             <version>1.19.8</version>
             <scope>test</scope>
         </dependency>
+        <!-- Testcontainers GenericContainer ссылается на JUnit4 TestRule (нужно для компиляции) -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

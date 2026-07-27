@@ -23,13 +23,16 @@ public class TransferService {
     private final AccountsClient accountsClient;
     private final NotificationClient notificationClient;
     private final TransferTransactionRepository transactionRepository;
+    private final TransferAuditService auditService;
     private final MeterRegistry meterRegistry;
 
     public TransferService(AccountsClient accountsClient, NotificationClient notificationClient,
-                           TransferTransactionRepository transactionRepository, MeterRegistry meterRegistry) {
+                           TransferTransactionRepository transactionRepository,
+                           TransferAuditService auditService, MeterRegistry meterRegistry) {
         this.accountsClient = accountsClient;
         this.notificationClient = notificationClient;
         this.transactionRepository = transactionRepository;
+        this.auditService = auditService;
         this.meterRegistry = meterRegistry;
     }
 
@@ -95,7 +98,7 @@ public class TransferService {
     }
 
     @SuppressWarnings("unused")
-    private TransferResponseDto transferFallback(TransferRequestDto request, Throwable t) {
+    TransferResponseDto transferFallback(TransferRequestDto request, Throwable t) {
         // Кастомная бизнес-метрика: неуспешные попытки перевода (группировка по логинам отправителя и получателя)
         meterRegistry.counter("bank.transfer.failed",
                 "from_login", request.fromLogin(),
@@ -103,16 +106,9 @@ public class TransferService {
         log.warn("Неуспешная попытка перевода {} от '{}' к '{}': {}",
                 request.amount(), request.fromLogin(), request.toLogin(), t.getMessage());
 
-        // Record failed transaction
-        TransferTransaction transaction = new TransferTransaction(
-                request.fromLogin(),
-                request.toLogin(),
-                request.amount(),
-                null, null, null, null,
-                "FAILED"
-        );
-        transaction.setErrorMessage(t.getMessage());
-        transactionRepository.save(transaction);
+        // Сохраняем запись о неуспешном переводе в отдельной транзакции (REQUIRES_NEW),
+        // чтобы она не откатилась при пробросе исключения из основной транзакции.
+        auditService.saveFailedTransfer(request, t.getMessage());
 
         throw new RuntimeException("Transfer failed: " + t.getMessage(), t);
     }

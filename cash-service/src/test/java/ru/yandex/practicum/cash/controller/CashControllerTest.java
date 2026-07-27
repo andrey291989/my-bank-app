@@ -1,4 +1,4 @@
-package ru.yandex.practicum.transfer.controller;
+package ru.yandex.practicum.cash.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.transfer.config.SecurityConfig;
-import ru.yandex.practicum.transfer.dto.TransferRequestDto;
-import ru.yandex.practicum.transfer.dto.TransferResponseDto;
-import ru.yandex.practicum.transfer.service.TransferService;
+import ru.yandex.practicum.cash.config.SecurityConfig;
+import ru.yandex.practicum.cash.dto.CashRequestDto;
+import ru.yandex.practicum.cash.dto.CashResponseDto;
+import ru.yandex.practicum.cash.service.CashService;
 
 import java.math.BigDecimal;
 
@@ -23,10 +23,10 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = TransferController.class,
+@WebMvcTest(controllers = CashController.class,
         excludeAutoConfiguration = OAuth2ClientAutoConfiguration.class)
 @Import(SecurityConfig.class)
-class TransferControllerTest {
+class CashControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,8 +35,9 @@ class TransferControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private TransferService transferService;
+    private CashService cashService;
 
+    // Требуется resource-server-ом для создания JwtDecoder без обращения к Keycloak
     @MockBean
     private JwtDecoder jwtDecoder;
 
@@ -46,8 +47,8 @@ class TransferControllerTest {
 
     @Test
     void shouldReturn401WithoutJwt() throws Exception {
-        var request = new TransferRequestDto("from", "to", new BigDecimal("100.00"));
-        mockMvc.perform(post("/api/transfer")
+        var request = new CashRequestDto("user", new BigDecimal("100.00"), CashRequestDto.CashAction.PUT);
+        mockMvc.perform(post("/api/cash")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(request)))
                 .andExpect(status().isUnauthorized());
@@ -55,21 +56,20 @@ class TransferControllerTest {
 
     @Test
     void shouldReturn200ForValidRequestWithJwt() throws Exception {
-        var request = new TransferRequestDto("from", "to", new BigDecimal("100.00"));
-        when(transferService.processTransfer(any())).thenReturn(
-                new TransferResponseDto("from", "From", "to", "To",
-                        new BigDecimal("100.00"), new BigDecimal("900.00"), "ok"));
+        var request = new CashRequestDto("user", new BigDecimal("100.00"), CashRequestDto.CashAction.PUT);
+        when(cashService.processCashOperation(any()))
+                .thenReturn(new CashResponseDto("user", "User", "1990-01-01", new BigDecimal("100.00"), "ok"));
 
-        mockMvc.perform(post("/api/transfer").with(jwt())
+        mockMvc.perform(post("/api/cash").with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(request)))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldReturn400WhenFromLoginBlank() throws Exception {
-        var request = new TransferRequestDto("", "to", new BigDecimal("100.00"));
-        mockMvc.perform(post("/api/transfer").with(jwt())
+    void shouldReturn400WhenLoginBlank() throws Exception {
+        var request = new CashRequestDto("", new BigDecimal("100.00"), CashRequestDto.CashAction.PUT);
+        mockMvc.perform(post("/api/cash").with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(request)))
                 .andExpect(status().isBadRequest());
@@ -77,8 +77,17 @@ class TransferControllerTest {
 
     @Test
     void shouldReturn400WhenAmountNotPositive() throws Exception {
-        var request = new TransferRequestDto("from", "to", new BigDecimal("0.00"));
-        mockMvc.perform(post("/api/transfer").with(jwt())
+        var request = new CashRequestDto("user", new BigDecimal("0.00"), CashRequestDto.CashAction.PUT);
+        mockMvc.perform(post("/api/cash").with(jwt())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400WhenActionNull() throws Exception {
+        var request = new CashRequestDto("user", new BigDecimal("100.00"), null);
+        mockMvc.perform(post("/api/cash").with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(request)))
                 .andExpect(status().isBadRequest());

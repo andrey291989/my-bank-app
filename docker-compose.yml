@@ -150,7 +150,6 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_BANK_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
-      SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_KAFKA_CONSUMER_GROUP_ID: accounts-service-group
     ports:
@@ -184,7 +183,6 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_CASH_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
       SERVICES_ACCOUNTS_URL: http://accounts-service:8082
-      SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_KAFKA_CONSUMER_GROUP_ID: cash-service-group
     ports:
@@ -218,7 +216,6 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_TRANSFER_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
       SERVICES_ACCOUNTS_URL: http://accounts-service:8082
-      SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_KAFKA_CONSUMER_GROUP_ID: transfer-service-group
     ports:

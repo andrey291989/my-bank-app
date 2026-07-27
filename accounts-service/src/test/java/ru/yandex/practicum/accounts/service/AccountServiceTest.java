@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class AccountServiceTest {
@@ -248,16 +249,9 @@ class AccountServiceTest {
         verify(accountRepository).findByLogin("fromuser");
         verify(accountRepository).findByLogin("touser");
         verify(accountRepository, times(2)).save(any(Account.class));
-        verify(notificationClient).sendNotification(
-            "fromuser",
-            "You have transferred 300.00 rub to touser",
-            "TRANSFER_OUT"
-        );
-        verify(notificationClient).sendNotification(
-            "touser",
-            "You have received 300.00 rub from fromuser",
-            "TRANSFER_IN"
-        );
+        // Уведомления о переводе отправляет transfer-service (владелец сценария),
+        // accounts только меняет балансы и не должен слать уведомления при переводе.
+        verify(notificationClient, never()).sendNotification(anyString(), anyString(), anyString());
     }
 
     @Test

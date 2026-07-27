@@ -1,16 +1,27 @@
 package ru.yandex.practicum.notifications.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.util.backoff.FixedBackOff;
 import ru.yandex.practicum.shared.kafka.dto.NotificationEvent;
 
 import java.util.HashMap;
@@ -18,6 +29,8 @@ import java.util.Map;
 
 @Configuration
 public class KafkaConsumerConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(KafkaConsumerConfig.class);
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -45,13 +58,43 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> kafkaListenerContainerFactory(
+            DefaultErrorHandler errorHandler) {
         ConcurrentKafkaListenerContainerFactory<String, NotificationEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         // Трейсинг входящих сообщений Kafka в Zipkin (Micrometer Observation)
         factory.getContainerProperties().setObservationEnabled(true);
+        // Обработка ошибок: повтор с backoff, затем отправка в dead-letter topic
+        factory.setCommonErrorHandler(errorHandler);
         return factory;
+    }
+
+    /**
+     * KafkaTemplate для публикации «битых»/необработанных сообщений в dead-letter topic.
+     */
+    @Bean
+    public KafkaTemplate<String, Object> dltKafkaTemplate() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        ProducerFactory<String, Object> pf = new DefaultKafkaProducerFactory<>(props);
+        return new KafkaTemplate<>(pf);
+    }
+
+    /**
+     * Обработчик ошибок consumer-а: 3 повтора с интервалом 1s, после чего запись
+     * отправляется в dead-letter topic (&lt;topic&gt;.DLT).
+     */
+    @Bean
+    public DefaultErrorHandler errorHandler(KafkaTemplate<String, Object> dltKafkaTemplate) {
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(dltKafkaTemplate);
+        DefaultErrorHandler handler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
+        handler.setRetryListeners((record, ex, deliveryAttempt) ->
+                log.warn("Ошибка обработки сообщения из топика {}, попытка {}: {}",
+                        record.topic(), deliveryAttempt, ex.getMessage()));
+        return handler;
     }
 }

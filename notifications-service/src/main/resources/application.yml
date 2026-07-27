@@ -30,8 +30,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
-          jwk-set-uri: http://localhost:9000/protocol/openid-connect/certs
+          issuer-uri: http://localhost:9000/realms/bank
+          jwk-set-uri: http://localhost:9000/realms/bank/protocol/openid-connect/certs
 
   mail:
     host: smtp.gmail.com

@@ -146,6 +146,17 @@ mvn -pl accounts-service spring-boot:run
 `localhost:9411` (Zipkin) и `localhost:5000` (Logstash); адреса переопределяются
 переменными `ZIPKIN_ENDPOINT`, `LOGSTASH_HOST`, `LOGSTASH_PORT`.
 
+### Тесты
+
+* **Unit-тесты** (Mockito) — бизнес-логика сервисов.
+* **Slice-тесты контроллеров** (`@WebMvcTest` + `spring-security-test`) — валидация
+  запросов (400) и защита эндпоинтов (401 без JWT). В тестовом `bootstrap.yml`
+  отключён Consul.
+* **EmbeddedKafka** — round-trip `NotificationEvent` через in-JVM брокер (без Docker).
+* **Testcontainers** (`AccountsPersistenceIT`) — старт контекста + применение
+  Flyway-миграций + Hibernate `validate` на реальном PostgreSQL. Требует Docker;
+  без него тест автоматически пропускается (`disabledWithoutDocker = true`).
+
 ## Наблюдаемость: трассировка, метрики, логирование
 
 Все компоненты наблюдаемости поднимаются автоматически вместе с приложением

@@ -30,8 +30,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
-          jwk-set-uri: http://localhost:9000/protocol/openid-connect/certs
+          issuer-uri: http://localhost:9000/realms/bank
+          jwk-set-uri: http://localhost:9000/realms/bank/protocol/openid-connect/certs
       client:
         registration:
           cash-client:
@@ -41,7 +41,7 @@ spring:
             authorization-grant-type: client_credentials
         provider:
           cash-client:
-            issuer-uri: http://localhost:9000
+            issuer-uri: http://localhost:9000/realms/bank
 
   cloud:
     consul:
@@ -59,11 +59,14 @@ spring:
         prefix: config
         default-context: application
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: cash-service-group
+
 services:
   accounts:
     url: http://accounts-service
-  notifications:
-    url: http://notifications-service
 
 # ==================== Observability (метрики + трейсинг) ====================
 management:
@@ -101,9 +104,3 @@ logging:
     ru.yandex.practicum: DEBUG
     org.springframework.security: INFO
     org.apache.kafka: WARN
-
-spring:
-  kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: cash-service-group

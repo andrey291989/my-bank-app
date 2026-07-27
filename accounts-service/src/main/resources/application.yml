@@ -30,8 +30,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
-          jwk-set-uri: http://localhost:9000/protocol/openid-connect/certs
+          issuer-uri: http://localhost:9000/realms/bank
+          jwk-set-uri: http://localhost:9000/realms/bank/protocol/openid-connect/certs
       client:
         registration:
           accounts-client:
@@ -41,7 +41,7 @@ spring:
             authorization-grant-type: client_credentials
         provider:
           accounts-client:
-            issuer-uri: http://localhost:9000
+            issuer-uri: http://localhost:9000/realms/bank
 
   cloud:
     consul:
@@ -63,10 +63,6 @@ spring:
     bootstrap-servers: localhost:9092
     consumer:
       group-id: accounts-service-group
-
-services:
-  notifications:
-    url: http://notifications-service
 
 # ==================== Observability (метрики + трейсинг) ====================
 management:

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.shared.kafka.KafkaTopics;
 import ru.yandex.practicum.shared.kafka.dto.NotificationEvent;
 
 import java.util.concurrent.CompletableFuture;
@@ -15,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 public class NotificationEventProducer {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationEventProducer.class);
-    private static final String NOTIFICATIONS_TOPIC = "notifications";
+    private static final String NOTIFICATIONS_TOPIC = KafkaTopics.NOTIFICATIONS;
 
     private final KafkaTemplate<String, NotificationEvent> kafkaTemplate;
 

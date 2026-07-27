@@ -123,16 +123,8 @@ public class AccountService {
         accountRepository.save(fromAccount);
         accountRepository.save(toAccount);
 
-        notificationClient.sendNotification(
-                fromLogin,
-                "You have transferred %s rub to %s".formatted(amount, toLogin),
-                "TRANSFER_OUT"
-        );
-        notificationClient.sendNotification(
-                toLogin,
-                "You have received %s rub from %s".formatted(amount, fromLogin),
-                "TRANSFER_IN"
-        );
+        // Уведомления о переводе отправляет владелец сценария — transfer-service,
+        // чтобы избежать дублирования (accounts только меняет балансы).
 
         return new AccountResponseDto(
                 fromAccount.getLogin(),

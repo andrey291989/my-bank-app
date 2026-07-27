@@ -1,0 +1,10 @@
+# Тестовый bootstrap: отключаем Consul, чтобы @SpringBootTest не подключался к нему.
+spring:
+  cloud:
+    consul:
+      enabled: false
+      config:
+        enabled: false
+        fail-fast: false
+      discovery:
+        enabled: false
