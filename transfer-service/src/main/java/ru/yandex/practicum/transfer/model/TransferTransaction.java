@@ -21,16 +21,19 @@ public class TransferTransaction {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "from_balance_before", nullable = false, precision = 19, scale = 2)
+    // Balance snapshots are nullable: a FAILED transfer is audited before the
+    // balances are known (see TransferAuditService#saveFailedTransfer), and the
+    // migration (V2__create_transfers_table.sql) allows NULL for these columns.
+    @Column(name = "from_balance_before", precision = 19, scale = 2)
     private BigDecimal fromBalanceBefore;
 
-    @Column(name = "from_balance_after", nullable = false, precision = 19, scale = 2)
+    @Column(name = "from_balance_after", precision = 19, scale = 2)
     private BigDecimal fromBalanceAfter;
 
-    @Column(name = "to_balance_before", nullable = false, precision = 19, scale = 2)
+    @Column(name = "to_balance_before", precision = 19, scale = 2)
     private BigDecimal toBalanceBefore;
 
-    @Column(name = "to_balance_after", nullable = false, precision = 19, scale = 2)
+    @Column(name = "to_balance_after", precision = 19, scale = 2)
     private BigDecimal toBalanceAfter;
 
     @Column(name = "status", nullable = false, length = 20)

@@ -76,6 +76,11 @@ database:
 # Environment variables for the transfer-service application
 env:
   SPRING_PROFILES_ACTIVE: kubernetes
+  # Consul is not part of the Kubernetes/Helm infrastructure. Disable it so the
+  # service does not fail-fast on startup while trying to reach Consul.
+  SPRING_CLOUD_CONSUL_ENABLED: "false"
+  SPRING_CLOUD_CONSUL_CONFIG_ENABLED: "false"
+  SPRING_CLOUD_CONSUL_DISCOVERY_ENABLED: "false"
   # Database settings
   SPRING_DATASOURCE_URL: jdbc:postgresql://bank-postgresql:5432/bank_db
   SPRING_DATASOURCE_USERNAME: bank_user

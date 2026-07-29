@@ -82,6 +82,11 @@ affinity: {}
 # Environment variables for the gateway application
 env:
   SPRING_PROFILES_ACTIVE: kubernetes
+  # Consul is not part of the Kubernetes/Helm infrastructure. Disable it so the
+  # service does not fail-fast on startup while trying to reach Consul.
+  SPRING_CLOUD_CONSUL_ENABLED: "false"
+  SPRING_CLOUD_CONSUL_CONFIG_ENABLED: "false"
+  SPRING_CLOUD_CONSUL_DISCOVERY_ENABLED: "false"
   # Keycloak settings
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs

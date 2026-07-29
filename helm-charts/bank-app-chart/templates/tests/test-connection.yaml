@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "bank-app-chart.fullname" . }}-front-ui:{{ .Values.frontUi.service.port }}']
+      args: ['{{ include "bank-app-chart.fullname" . }}-front-ui:{{ index .Values "front-ui" "service" "port" }}']
   restartPolicy: Never
