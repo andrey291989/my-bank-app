@@ -6,6 +6,11 @@ spring:
     name: gateway
 
   cloud:
+    # Spring Cloud 2024.0.1 официально совместим с Spring Boot 3.4.x, а проект собран
+    # на 3.5.7. Без этого флага CompatibilityVerifier валит приложение на старте
+    # (APPLICATION FAILED TO START), то есть pod уйдёт в CrashLoopBackOff.
+    compatibility-verifier:
+      enabled: false
     gateway:
       discovery:
         locator:

@@ -77,7 +77,7 @@ database:
 # Environment variables for Keycloak
 env:
   KC_DB: postgres
-  KC_DB_URL: jdbc:postgresql://bank-postgresql:5432/keycloak_db
+  KC_DB_URL: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/keycloak_db"
   KC_DB_USERNAME: keycloak_user
   # Password will be loaded from Kubernetes Secret
   KC_DB_PASSWORD: ""

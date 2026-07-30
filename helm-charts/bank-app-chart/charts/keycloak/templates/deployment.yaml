@@ -56,7 +56,7 @@ spec:
                   key: admin-password
             {{- else }}
             - name: {{ $key }}
-              value: {{ $val | quote }}
+              value: {{ tpl ($val | toString) $ | quote }}
             {{- end }}
             {{- end }}
           livenessProbe:

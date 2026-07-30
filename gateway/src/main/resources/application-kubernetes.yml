@@ -1,0 +1,29 @@
+# Профиль kubernetes.
+#
+# Маршруты gateway описаны в GatewayConfig (вместе с circuit breaker и retry),
+# а базовый application.yml дополняет их автоматическими маршрутами из Consul
+# service discovery. В Kubernetes Consul не разворачивается
+# (см. bootstrap-kubernetes.yml), поэтому здесь:
+#
+#   * discovery.locator выключен — без Consul ему неоткуда брать сервисы;
+#   * "lb://<service>" из GatewayConfig заменён на прямые адреса Service-ов,
+#     так как балансировка через lb:// тоже требует discovery. Роль discovery
+#     выполняет DNS самого Kubernetes.
+#
+# Конкретные адреса приходят из env-переменных Helm-чарта
+# (см. charts/gateway/templates/deployment.yaml), значения после ":" — дефолты
+# на случай запуска без Helm.
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+
+services:
+  accounts:
+    uri: ${SERVICES_ACCOUNTS_URL:http://accounts-service:8082}
+  cash:
+    uri: ${SERVICES_CASH_URL:http://cash-service:8083}
+  transfer:
+    uri: ${SERVICES_TRANSFER_URL:http://transfer-service:8084}
