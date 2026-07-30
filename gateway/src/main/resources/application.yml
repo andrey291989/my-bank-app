@@ -6,6 +6,11 @@ spring:
     name: gateway
 
   cloud:
+    # Spring Cloud 2024.0.1 официально совместим с Spring Boot 3.4.x, а проект собран
+    # на 3.5.7. Без этого флага CompatibilityVerifier валит приложение на старте
+    # (APPLICATION FAILED TO START), то есть pod уйдёт в CrashLoopBackOff.
+    compatibility-verifier:
+      enabled: false
     gateway:
       discovery:
         locator:
@@ -54,17 +59,40 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
-          jwk-set-uri: http://localhost:9000/protocol/openid-connect/certs
+          issuer-uri: http://localhost:9000/realms/bank
+          jwk-set-uri: http://localhost:9000/realms/bank/protocol/openid-connect/certs
 
+# ==================== Observability (метрики + трейсинг) ====================
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        spring.cloud.gateway.requests: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
+
+# Хост Logstash для доставки логов (используется в logback-spring.xml)
+logstash:
+  host: ${LOGSTASH_HOST:localhost}
+  port: ${LOGSTASH_PORT:5000}
 
 logging:
   level:

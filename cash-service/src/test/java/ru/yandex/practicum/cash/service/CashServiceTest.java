@@ -1,10 +1,12 @@
 package ru.yandex.practicum.cash.service;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import ru.yandex.practicum.cash.dto.AccountResponseDto;
 import ru.yandex.practicum.cash.dto.CashRequestDto;
 import ru.yandex.practicum.cash.dto.CashResponseDto;
@@ -27,6 +29,9 @@ class CashServiceTest {
 
     @Mock
     private CashTransactionRepository transactionRepository;
+
+    @Spy
+    private SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
 
     @InjectMocks
     private CashService cashService;

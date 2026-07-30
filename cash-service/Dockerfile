@@ -11,8 +11,10 @@ COPY accounts-service/pom.xml accounts-service/
 COPY cash-service/pom.xml cash-service/
 COPY transfer-service/pom.xml transfer-service/
 COPY notifications-service/pom.xml notifications-service/
+COPY shared-kafka/pom.xml shared-kafka/
 
-# Copy source code for cash-service
+# Copy source code for cash-service and the shared-kafka dependency
+COPY shared-kafka/src shared-kafka/src/
 COPY cash-service/src cash-service/src/
 
 # Build only cash-service module

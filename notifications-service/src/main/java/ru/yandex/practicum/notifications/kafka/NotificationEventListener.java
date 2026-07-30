@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.shared.kafka.KafkaTopics;
 import ru.yandex.practicum.shared.kafka.dto.NotificationEvent;
 import ru.yandex.practicum.notifications.service.NotificationService;
 
@@ -13,7 +14,7 @@ import ru.yandex.practicum.notifications.service.NotificationService;
 public class NotificationEventListener {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationEventListener.class);
-    private static final String NOTIFICATIONS_TOPIC = "notifications";
+    private static final String NOTIFICATIONS_TOPIC = KafkaTopics.NOTIFICATIONS;
 
     private final NotificationService notificationService;
 

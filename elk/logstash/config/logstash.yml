@@ -1,0 +1,4 @@
+# Базовая конфигурация Logstash
+http.host: "0.0.0.0"
+# Мониторинг конвейера отключаем — Elasticsearch без X-Pack security
+xpack.monitoring.enabled: false

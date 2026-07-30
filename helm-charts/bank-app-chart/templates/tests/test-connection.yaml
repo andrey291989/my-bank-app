@@ -11,5 +11,7 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "bank-app-chart.fullname" . }}-front-ui:{{ .Values.frontUi.service.port }}']
+      # The front-ui Service is created by the front-ui subchart, whose fullname
+      # template resolves to "<release>-front-ui" — not to this chart's fullname.
+      args: ['{{ .Release.Name }}-front-ui:{{ index .Values "front-ui" "service" "port" }}']
   restartPolicy: Never

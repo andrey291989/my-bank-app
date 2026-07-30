@@ -1,0 +1,11 @@
+# Тестовый bootstrap: отключаем Consul config/discovery, чтобы контекст в тестах
+# не пытался подключаться к Consul (localhost:8500).
+spring:
+  cloud:
+    consul:
+      enabled: false
+      config:
+        enabled: false
+        fail-fast: false
+      discovery:
+        enabled: false

@@ -1,0 +1,40 @@
+# ==========================================================================
+# Prometheus — сбор метрик микросервисов приложения "Банк".
+# Метрики поставляются приложениями через Spring Boot Actuator + Micrometer
+# по эндпоинту /actuator/prometheus.
+# ==========================================================================
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  external_labels:
+    project: my-bank-app
+
+# Правила алертов
+rule_files:
+  - "alert.rules.yml"
+
+# Отправка алертов в Alertmanager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # Сам Prometheus
+  - job_name: 'prometheus'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Микросервисы и фронт (Front UI)
+  - job_name: 'bank-microservices'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['front-ui:8080']
+      - targets: ['gateway:8081']
+      - targets: ['accounts-service:8082']
+      - targets: ['cash-service:8083']
+      - targets: ['transfer-service:8084']
+      - targets: ['notifications-service:8085']

@@ -1,0 +1,32 @@
+# ==========================================================================
+# Alertmanager — маршрутизация и группировка алертов Prometheus.
+# Для демонстрации используется receiver-заглушка (алерты видны в UI
+# Alertmanager на http://localhost:9093). При необходимости сюда можно
+# добавить отправку в e-mail, Slack, Telegram и т. д.
+# ==========================================================================
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'application']
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 3h
+  routes:
+    - matchers:
+        - severity = "critical"
+      receiver: 'critical'
+      repeat_interval: 1h
+
+receivers:
+  - name: 'default'
+  - name: 'critical'
+
+inhibit_rules:
+  # Критический алерт подавляет одноимённый warning
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity = "warning"
+    equal: ['alertname', 'application']

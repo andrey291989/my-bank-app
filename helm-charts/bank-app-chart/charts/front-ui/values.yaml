@@ -82,7 +82,7 @@ affinity: {}
 # Environment variables for the front-ui application
 env:
   SPRING_PROFILES_ACTIVE: kubernetes
-  GATEWAY_URL: http://gateway:8081
+  GATEWAY_URL: "http://{{ .Release.Name }}-gateway:8081"
   # Keycloak settings
-  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANK_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
-  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_BANK_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANK_CLIENT_ISSUER_URI: "http://{{ .Release.Name }}-keycloak:8080/realms/bank"
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_BANK_CLIENT_ISSUER_URI: "http://{{ .Release.Name }}-keycloak:8080/realms/bank"

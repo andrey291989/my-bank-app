@@ -7,8 +7,9 @@
 
     <parent>
         <groupId>ru.yandex.practicum</groupId>
-        <artifactId>bank-app</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <artifactId>my-bank-app</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>shared-kafka</artifactId>

@@ -40,8 +40,18 @@ spec:
           env:
             {{- range $key, $val := .Values.env }}
             - name: {{ $key }}
-              value: {{ $val | quote }}
+              value: {{ tpl ($val | toString) $ | quote }}
             {{- end }}
+            # Backends for the routes declared in GatewayConfig. In the "kubernetes"
+            # profile Consul discovery is off, so "lb://" is replaced by the Service
+            # addresses resolved through Kubernetes DNS
+            # (see gateway/src/main/resources/application-kubernetes.yml).
+            - name: SERVICES_ACCOUNTS_URL
+              value: "http://{{ .Release.Name }}-accounts-service:{{ .Values.backends.accounts.port }}"
+            - name: SERVICES_CASH_URL
+              value: "http://{{ .Release.Name }}-cash-service:{{ .Values.backends.cash.port }}"
+            - name: SERVICES_TRANSFER_URL
+              value: "http://{{ .Release.Name }}-transfer-service:{{ .Values.backends.transfer.port }}"
           livenessProbe:
             httpGet:
               path: /actuator/health

@@ -11,6 +11,8 @@ COPY accounts-service/pom.xml accounts-service/
 COPY cash-service/pom.xml cash-service/
 COPY transfer-service/pom.xml transfer-service/
 COPY notifications-service/pom.xml notifications-service/
+# shared-kafka is a reactor module in the parent POM, so its POM must be present
+COPY shared-kafka/pom.xml shared-kafka/
 
 # Copy source code for gateway
 COPY gateway/src gateway/src/

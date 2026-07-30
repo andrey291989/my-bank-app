@@ -1,0 +1,16 @@
+# Профиль kubernetes: Consul не входит в инфраструктуру Helm-чарта
+# (в Chart.yaml есть только postgresql, keycloak и kafka), поэтому Consul
+# config/discovery отключены, а fail-fast снят — иначе pod упал бы на старте,
+# не дойдя даже до подключения к Kafka.
+#
+# Файл именно bootstrap-*, а не application-*: Consul Config поднимается в
+# bootstrap-контексте, куда application-{profile}.yml ещё не попадает.
+spring:
+  cloud:
+    consul:
+      enabled: false
+      config:
+        enabled: false
+        fail-fast: false
+      discovery:
+        enabled: false

@@ -1,0 +1,15 @@
+# Автоматическая загрузка дашбордов из файлов
+apiVersion: 1
+
+providers:
+  - name: 'Bank App Dashboards'
+    orgId: 1
+    folder: 'Bank'
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

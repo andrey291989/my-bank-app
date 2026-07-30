@@ -1,5 +1,6 @@
 package ru.yandex.practicum.notifications.service;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,12 +20,15 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
     private final String defaultDeliveryMethod;
+    private final MeterRegistry meterRegistry;
 
     public NotificationService(NotificationRepository notificationRepository, EmailService emailService,
-                              @Value("${notifications.delivery.method:LOG}") String defaultDeliveryMethod) {
+                              @Value("${notifications.delivery.method:LOG}") String defaultDeliveryMethod,
+                              MeterRegistry meterRegistry) {
         this.notificationRepository = notificationRepository;
         this.emailService = emailService;
         this.defaultDeliveryMethod = defaultDeliveryMethod;
+        this.meterRegistry = meterRegistry;
     }
 
     @Transactional
@@ -60,9 +64,14 @@ public class NotificationService {
         if (success) {
             notification.setDeliveryStatus("SUCCESS");
             notification.setSentAt(LocalDateTime.now());
+            log.info("Уведомление типа '{}' успешно доставлено пользователю '{}' способом {}",
+                    request.type(), request.userLogin(), deliveryMethod);
         } else {
             notification.setDeliveryStatus("FAILED");
             notification.setErrorMessage(errorMessage);
+            // Кастомная бизнес-метрика: невозможность отправки уведомления (группировка по логину)
+            meterRegistry.counter("bank.notification.send.failed", "login", request.userLogin()).increment();
+            log.error("Не удалось отправить уведомление пользователю '{}': {}", request.userLogin(), errorMessage);
         }
         notificationRepository.save(notification);
     }

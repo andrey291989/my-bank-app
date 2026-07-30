@@ -47,7 +47,7 @@ spec:
                   key: database-password
             {{- else }}
             - name: {{ $key }}
-              value: {{ $val | quote }}
+              value: {{ tpl ($val | toString) $ | quote }}
             {{- end }}
             {{- end }}
           livenessProbe:

@@ -40,7 +40,7 @@ spec:
           env:
             {{- range $key, $val := .Values.env }}
             - name: {{ $key }}
-              value: {{ $val | quote }}
+              value: {{ tpl ($val | toString) $ | quote }}
             {{- end }}
           livenessProbe:
             httpGet:

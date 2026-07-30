@@ -36,6 +36,10 @@
         <postgresql.version>42.7.3</postgresql.version>
         <flyway.version>10.15.2</flyway.version>
 
+        <!-- Observability versions -->
+        <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
+        <datasource-micrometer.version>1.1.2</datasource-micrometer.version>
+
         <!-- Test versions -->
         <junit.version>5.10.0</junit.version>
         <testcontainers.version>1.19.8</testcontainers.version>
@@ -71,6 +75,20 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
+            </dependency>
+
+            <!-- Observability: логи в Logstash в формате JSON -->
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+
+            <!-- Observability: трейсинг запросов в БД (JDBC/DataSource) -->
+            <dependency>
+                <groupId>net.ttddyy.observation</groupId>
+                <artifactId>datasource-micrometer-spring-boot</artifactId>
+                <version>${datasource-micrometer.version}</version>
             </dependency>
 
             <!-- Flyway -->

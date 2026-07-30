@@ -76,19 +76,24 @@ database:
 # Environment variables for the transfer-service application
 env:
   SPRING_PROFILES_ACTIVE: kubernetes
+  # Consul is not part of the Kubernetes/Helm infrastructure. Disable it so the
+  # service does not fail-fast on startup while trying to reach Consul.
+  SPRING_CLOUD_CONSUL_ENABLED: "false"
+  SPRING_CLOUD_CONSUL_CONFIG_ENABLED: "false"
+  SPRING_CLOUD_CONSUL_DISCOVERY_ENABLED: "false"
   # Database settings
-  SPRING_DATASOURCE_URL: jdbc:postgresql://bank-postgresql:5432/bank_db
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/bank_db"
   SPRING_DATASOURCE_USERNAME: bank_user
   # Password will be loaded from Kubernetes Secret
   SPRING_DATASOURCE_PASSWORD: ""
   SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: transfer_schema
   # Keycloak settings
-  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bank
-  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/bank/protocol/openid-connect/certs
-  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_TRANSFER_CLIENT_ISSUER_URI: http://keycloak:8080/realms/bank
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://{{ .Release.Name }}-keycloak:8080/realms/bank"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://{{ .Release.Name }}-keycloak:8080/realms/bank/protocol/openid-connect/certs"
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_TRANSFER_CLIENT_ISSUER_URI: "http://{{ .Release.Name }}-keycloak:8080/realms/bank"
   # Services URLs
-  SERVICES_ACCOUNTS_URL: http://accounts-service:8082
-  SERVICES_NOTIFICATIONS_URL: http://notifications-service:8085
+  SERVICES_ACCOUNTS_URL: "http://{{ .Release.Name }}-accounts-service:8082"
+  SERVICES_NOTIFICATIONS_URL: "http://{{ .Release.Name }}-notifications-service:8085"
   # Kafka settings
-  SPRING_KAFKA_BOOTSTRAP_SERVERS: bank-kafka:9092
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "{{ .Release.Name }}-kafka:9092"
   SPRING_KAFKA_CONSUMER_GROUP_ID: transfer-service-group

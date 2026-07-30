@@ -39,6 +39,9 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, NotificationEvent> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+        KafkaTemplate<String, NotificationEvent> template = new KafkaTemplate<>(producerFactory());
+        // Трейсинг исходящих сообщений Kafka в Zipkin (Micrometer Observation)
+        template.setObservationEnabled(true);
+        return template;
     }
 }
